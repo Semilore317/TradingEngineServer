@@ -12,7 +12,10 @@ namespace TradingEngineServer.Core
     {
         private readonly ILogger<TradingEngineServer> _logger;
         private readonly TradingEngineServerConfiguration _tradingEngineServerconfig;
-        public TradingEngineServer(Logger<TradingEngineServer> logger, IOptions<TradingEngineServerConfiguration> config)
+        public TradingEngineServer(
+            ILogger<TradingEngineServer> logger, 
+            IOptions<TradingEngineServerConfiguration> config
+            )
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _tradingEngineServerconfig = config.Value ?? throw new ArgumentNullException(nameof(config)); 
@@ -25,10 +28,12 @@ namespace TradingEngineServer.Core
 
         protected override Task ExecuteAsync(CancellationToken stoppingToken)
         {
+             _logger.LogInformation($"Trading Engine Server {nameof(TradingEngineServer)} started");
             // the server technically doesn't need a loop, but it is here to keep the service running
-            while (stoppingToken.IsCancellationRequested)
+            while (!stoppingToken.IsCancellationRequested)
             {
             }
+            _logger.LogInformation($"Trading Engine Server {nameof(TradingEngineServer)} stopped");
 
             return Task.CompletedTask;
         }
