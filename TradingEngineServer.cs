@@ -1,11 +1,36 @@
-﻿using System;
+﻿using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using System;
 using System.Collections.Generic;
 using System.Text;
+using TradingEngineServer.Core.Configuration;
 
-namespace TradingEngineServer.core
+namespace TradingEngineServer.Core
 {
-    class TradingEngineServer: iTradingEngineServer
+    sealed class TradingEngineServer : BackgroundService, ITradingEngineServer
     {
+        private readonly ILogger<TradingEngineServer> _logger;
+        private readonly TradingEngineServerConfiguration _tradingEngineServerconfig;
+        public TradingEngineServer(Logger<TradingEngineServer> logger, IOptions<TradingEngineServerConfiguration> config)
+        {
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _tradingEngineServerconfig = config.Value ?? throw new ArgumentNullException(nameof(config)); 
+       }
 
+        public Task Run(CancellationToken token)
+        {
+            return ExecuteAsync(token);
+        }
+
+        protected override Task ExecuteAsync(CancellationToken stoppingToken)
+        {
+            // the server technically doesn't need a loop, but it is here to keep the service running
+            while (stoppingToken.IsCancellationRequested)
+            {
+            }
+
+            return Task.CompletedTask;
+        }
     }
 }

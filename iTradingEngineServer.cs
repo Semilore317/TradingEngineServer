@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace TradingEngineServer.core
+namespace TradingEngineServer.Core
 {
-    interface iTradingEngineServer
+    interface ITradingEngineServer
     {
-
+        Task Run(CancellationToken token);
     }
 }
