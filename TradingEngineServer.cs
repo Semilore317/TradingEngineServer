@@ -4,7 +4,7 @@ using System.Text;
 
 namespace TradingEngineServer.core
 {
-    interface iTradingEngineServer
+    class TradingEngineServer: iTradingEngineServer
     {
 
     }
