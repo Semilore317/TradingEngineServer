@@ -5,19 +5,20 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using TradingEngineServer.Core.Configuration;
+using TradingEngineServer.Logging;
 
 namespace TradingEngineServer.Core
 {
     sealed class TradingEngineServer : BackgroundService, ITradingEngineServer
     {
-        private readonly ILogger<TradingEngineServer> _logger;
+        private readonly ITextLogger _logger;
         private readonly TradingEngineServerConfiguration _tradingEngineServerconfig;
         public TradingEngineServer(
-            ILogger<TradingEngineServer> logger, 
+            ITextLogger textLogger, 
             IOptions<TradingEngineServerConfiguration> config
             )
         {
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _logger = textLogger ?? throw new ArgumentNullException(nameof(textLogger));
             _tradingEngineServerconfig = config.Value ?? throw new ArgumentNullException(nameof(config)); 
        }
 
@@ -30,7 +31,7 @@ namespace TradingEngineServer.Core
 
         protected override Task ExecuteAsync(CancellationToken stoppingToken)
         {
-             _logger.LogInformation($"Trading Engine Server {nameof(TradingEngineServer)} started");
+             _logger.Info("TradingEngineServer.Core", "Trading Engine Server Started");
             // the server technically doesn't need a loop, but it is here to keep the service running
             while (!stoppingToken.IsCancellationRequested)
             {
@@ -39,8 +40,7 @@ namespace TradingEngineServer.Core
                 cancellationTokenSource.Dispose();
                 //cancellationTokenSource.Token --> this is what's being cancelled by the cancellation via Ctrl + C
             }
-            _logger.LogInformation($"Trading Engine Server {nameof(TradingEngineServer)} stopped");
-
+            _logger.Info("TradingEngineServer.Core", "Trading Engine Server Stopped");
             return Task.CompletedTask;
         }
     }
