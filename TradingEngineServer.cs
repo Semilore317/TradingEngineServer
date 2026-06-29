@@ -24,6 +24,8 @@ namespace TradingEngineServer.Core
         public Task Run(CancellationToken token)
         {
             return ExecuteAsync(token);
+            // the cancellation token makes it so that we can cancel the "run loop"
+            // kinda similar to the way games run on a loop or tk runs on a mainLoop
         }
 
         protected override Task ExecuteAsync(CancellationToken stoppingToken)
@@ -32,6 +34,10 @@ namespace TradingEngineServer.Core
             // the server technically doesn't need a loop, but it is here to keep the service running
             while (!stoppingToken.IsCancellationRequested)
             {
+                CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
+                cancellationTokenSource.Cancel();
+                cancellationTokenSource.Dispose();
+                //cancellationTokenSource.Token --> this is what's being cancelled by the cancellation via Ctrl + C
             }
             _logger.LogInformation($"Trading Engine Server {nameof(TradingEngineServer)} stopped");
 
