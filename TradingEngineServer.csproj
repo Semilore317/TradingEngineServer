@@ -6,8 +6,8 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 		<LangVersion>latest</LangVersion>
-		<RootNamespace>TradingEngineServer.Core</RootNamespace>
-		<AssemblyName>TradingEngineServer.Core</AssemblyName>
+		<RootNamespace>TradingEngineServer</RootNamespace>
+		<AssemblyName>TradingEngineServer</AssemblyName>
 	</PropertyGroup>
 
 	<ItemGroup>
