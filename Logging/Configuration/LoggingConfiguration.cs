@@ -3,9 +3,13 @@
 public class LoggingConfiguration
 {
  public TextLogger TextLoggerConfiguration { get; set; }   
+ public DatabaseLogger  DatabaseLoggerConfiguration { get; set; }
 }
 
-
+public class DatabaseLoggerConfiguration
+{
+    
+}
 public class TextLoggerConfiguration
 {
     public string directory { get; set; }
