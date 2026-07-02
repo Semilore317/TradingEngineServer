@@ -2,9 +2,11 @@
 using Microsoft.Extensions.Hosting;
 using System;
 using System.Collections.Generic;
+using System.Reflection.Metadata.Ecma335;
 using System.Text;
 using TradingEngineServer.Core.Configuration;
 using TradingEngineServer.Logging;
+using TradingEngineServer.Logging.Configuration;
 
 namespace TradingEngineServer.Core
 {
@@ -15,6 +17,7 @@ namespace TradingEngineServer.Core
             =>{
                 services.AddOptions();
                 services.Configure<TradingEngineServerConfiguration>(context.Configuration.GetSection(nameof(TradingEngineServerConfiguration)));
+                services.Configure<LoggingConfiguration>(context.Configuration.GetSection(nameof(LoggingConfiguration)));
 
                 services.AddSingleton<ITradingEngineServer, TradingEngineServer>();
                 services.AddSingleton<ITextLogger, TextLogger>();
