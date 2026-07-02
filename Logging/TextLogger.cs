@@ -16,9 +16,9 @@ public class TextLogger : AbstractLogger, ITextLogger
         
         // create the directory (if it doesn't exist) and start logging in a file
         
-        string logFileName = $"{config.FileName}_{DateTime.Now:yyyy-MM-dd}.{config.FileExtension.TrimStart('.')}";
+        string logFileName = $"{config.FileName}_{DateTime.Now:yyyy-MM-dd HH_mm_ss}.{config.FileExtension.TrimStart('.')}";
         string filePath = Path.Combine(config.Directory, logFileName);
-        System.IO.Directory.CreateDirectory(config.Directory);
+        Directory.CreateDirectory(config.Directory);
         
         _ = Task.Run(() => logAsync(filePath, _logQueue, _tokenSource.Token));
     }
@@ -59,9 +59,44 @@ public class TextLogger : AbstractLogger, ITextLogger
             Thread.CurrentThread.Name));
     }
 
+    // Finalizer Queue.... kinda like a destructor in C++ but not realaly
+    ~TextLogger()
+    {
+        //destroy everything that hasn't been GC'd and is available for destruction
+        Dispose(false);
+    }
+    
     public void Dispose()
     {
-        throw new NotImplementedException();
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+        lock (_lock)
+        {
+            if (_disposed)
+            {
+                return;
+            }
+        }
+
+        lock (_lock)
+        {
+            _disposed = true;
+        }
+
+
+        if (disposing)
+        {
+            // remove managed resources(internal stuff)
+            _tokenSource.Cancel();
+            _tokenSource.Dispose();
+        }
+        
+        
+        // remove unmanaged resources(external stuff) e.g db, filestream atc
     }
 
     /// <summary>
@@ -71,4 +106,6 @@ public class TextLogger : AbstractLogger, ITextLogger
 
 
     private readonly CancellationTokenSource _tokenSource = new CancellationTokenSource();
+    private bool _disposed = false;
+    private readonly object _lock = new object();
 }
