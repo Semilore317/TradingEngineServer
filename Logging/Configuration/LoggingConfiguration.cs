@@ -2,17 +2,18 @@
 
 public class LoggingConfiguration
 {
- public TextLogger TextLoggerConfiguration { get; set; }   
- public DatabaseLogger  DatabaseLoggerConfiguration { get; set; }
+    public LoggerType LoggerType { get; set; }
+    public TextLogger TextLoggerConfiguration { get; set; }
+    // i can define other loggers later
 }
 
 public class DatabaseLoggerConfiguration
 {
-    
 }
+
 public class TextLoggerConfiguration
 {
-    public string directory { get; set; }
-    public string fileName { get; set; }    
-    public string fileExtension { get; set; }
+    public string Directory { get; set; }
+    public string FileName { get; set; }
+    public string FileExtension { get; set; }
 }
