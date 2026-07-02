@@ -1,5 +1,5 @@
 ﻿{
-  "LoggerConfiguration": {
+  "LoggingConfiguration": {
     "LoggerType": "Text",
     "TextLoggerConfiguration": {
       /* ignore my NPC windows user name.. forgot to change it and was already in too deep */
