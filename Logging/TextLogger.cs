@@ -31,6 +31,7 @@ public class TextLogger : AbstractLogger, ITextLogger
         // important since they open direct connections to the OS's file system
         using var fileStream = new FileStream(filepath, FileMode.Append, FileAccess.Write, FileShare.Read);
         using var streamWriter = new StreamWriter(fileStream);
+        streamWriter.AutoFlush = true; // to clear the output buffer
 
         try
         {
@@ -38,15 +39,21 @@ public class TextLogger : AbstractLogger, ITextLogger
             {
                 var logItem = await logQueue.ReceiveAsync(token).ConfigureAwait(false);
                 string formattedMessage = FormatLogItem(logItem);
-
                 await streamWriter.WriteLineAsync(formattedMessage).ConfigureAwait(false);
-            }
-
-            {
             }
         }
         catch (OperationCanceledException)
         {
+            // catches when the token is cancelled on shutdown
+        }
+        finally
+        {
+            //drain any remaining logs posted to the same queue before shutdown
+            while (logQueue.TryReceive(out var logItem))
+            {
+                string formattedMessage = FormatLogItem(logItem);
+                streamWriter.WriteLine(formattedMessage);
+            }
         }
     }
 
