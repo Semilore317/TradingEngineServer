@@ -1,4 +1,4 @@
-﻿namespace TradingEngineServer.orders;
+﻿namespace TradingEngineServer.Orders;
 
 public interface IOrderCore
 {
