@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System;
 using System.Collections.Generic;
@@ -13,17 +13,19 @@ namespace TradingEngineServer.Core
     public sealed class TradingEngineServerHostBuilder
     {
         public static IHost BuildTradingEngineServer()
-            => Host.CreateDefaultBuilder().ConfigureServices((context, services)
-            =>{
-                services.AddOptions();
-                services.Configure<TradingEngineServerConfiguration>(context.Configuration.GetSection(nameof(TradingEngineServerConfiguration)));
-                services.Configure<LoggingConfiguration>(context.Configuration.GetSection(nameof(LoggingConfiguration)));
+            => Host.CreateDefaultBuilder()
+                .UseContentRoot(AppContext.BaseDirectory)
+                .ConfigureServices((context, services)
+                =>{
+                    services.AddOptions();
+                    services.Configure<TradingEngineServerConfiguration>(context.Configuration.GetSection(nameof(TradingEngineServerConfiguration)));
+                    services.Configure<LoggingConfiguration>(context.Configuration.GetSection(nameof(LoggingConfiguration)));
 
-                services.AddSingleton<ITradingEngineServer, TradingEngineServer>();
-                services.AddSingleton<ITextLogger, TextLogger>();
+                    services.AddSingleton<ITradingEngineServer, TradingEngineServer>();
+                    services.AddSingleton<ITextLogger, TextLogger>();
 
-                // add hosted service
-                services.AddHostedService<TradingEngineServer>();
-            }).Build();
+                    // add hosted service
+                    services.AddHostedService<TradingEngineServer>();
+                }).Build();
     }
 }
