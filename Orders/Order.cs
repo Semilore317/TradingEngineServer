@@ -8,6 +8,7 @@ public class Order(long orderId, long securityId, string username, Side side, lo
     public Side Side { get; } = side;
     public long Price { get; } = price; // in cents
     public uint InitialQuantity { get; } = initialQuantity;
+    public bool IsBuySide =>  Side == Side.Buy;
     
     
     
