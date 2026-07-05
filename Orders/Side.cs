@@ -2,6 +2,7 @@
 
 public enum Side: byte
 {
-    Buy = 1,
-    Sell = 2
+    Buy = 1, 
+    Sell = 2, 
+    Unknown = 3
 }
