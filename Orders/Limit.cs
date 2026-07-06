@@ -61,7 +61,7 @@ public class Limit
             if (IsEmpty)
                 return Side.Unknown;
             else
-                return Head.IsBuySide ? Side.Buy : Side.Sell;
+                return Head!.IsBuySide ? Side.Buy : Side.Sell; // ! forgives the possibility of nullability 
         }
     }
 

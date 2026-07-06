@@ -1,6 +1,8 @@
-﻿namespace OrderBook;
+﻿namespace TradingEngineServer.OrderBook;
 
 public interface IReadonlyOrderBook
 {
-    
+    bool ContainsOrder(long orderId);
+    OrderBookSpread GetSpread();
+    int OrderCount { get; } // for clarity... this represents the number of orders in the orderbook
 }
