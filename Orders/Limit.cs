@@ -1,4 +1,4 @@
-﻿namespace TradingEngineServer.Orders;
+namespace TradingEngineServer.Orders;
 
 public class Limit
 {
@@ -7,9 +7,10 @@ public class Limit
     or the minimum they're willing to accept (ask)
     if a trader wants to buy Microsoft stock MSFT at $100.00, Limit == $100.00
     */
+    
     public long Price { get; set; }
-    public OrderbookEntry Head { get; set; }
-    public OrderbookEntry Tail { get; set; }
+    public OrderbookEntry? Head { get; set; }
+    public OrderbookEntry? Tail { get; set; }
 
     public bool IsEmpty => Head == null;
     
@@ -19,10 +20,10 @@ public class Limit
         if (IsEmpty)
             return orderCount;
 
-        OrderbookEntry entry = Head;
+        OrderbookEntry? entry = Head;
         while (entry != null)
         {
-            if (entry.CurentOrder.CurrentQuantity != 0)
+            if (entry.CurrentQuantity != 0)
             {
                 orderCount++;
             }
@@ -39,10 +40,10 @@ public class Limit
             return orderQuantity;
         
         
-        OrderbookEntry entry = Head;
+        OrderbookEntry? entry = Head;
         while (entry != null)
         {
-            orderQuantity += entry.CurentOrder.CurrentQuantity;
+            orderQuantity += entry.CurrentQuantity;
             entry = entry.Next;
         }
         
@@ -57,26 +58,25 @@ public class Limit
             if (IsEmpty)
                 return Side.Unknown;
             else
-                return Head.CurentOrder.IsBuySide ? Side.Buy : Side.Sell;
+                return Head.IsBuySide ? Side.Buy : Side.Sell;
         }
     }
 
     public List<OrderRecord> GetLevelOrderRecords()
     {
         List<OrderRecord> orderRecords = new List<OrderRecord>();
-        OrderbookEntry entry = Head;
+        OrderbookEntry? entry = Head;
         uint theoreticalQueuePosition = 0;
         while (entry != null)
         {
-            var currentOrder = entry.CurentOrder;
-            if (currentOrder.CurrentQuantity != 0)
+            if (entry.CurrentQuantity != 0)
                 orderRecords.Add(new OrderRecord(
-                    currentOrder.OrderId,
-                    currentOrder.CurrentQuantity,
+                    entry.OrderId,
+                    entry.CurrentQuantity,
                     Price,
-                    currentOrder.IsBuySide,
-                    currentOrder.Username,
-                    currentOrder.SecurityId,
+                    entry.IsBuySide,
+                    entry.Username,
+                    entry.SecurityId,
                     theoreticalQueuePosition
                 ));
 
