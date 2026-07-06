@@ -2,6 +2,9 @@ namespace TradingEngineServer.Orders;
 
 public class Limit
 {
+    
+    // TODO: refactor this into a struct at some point for better performance
+    
     /*
     this is essentially the maximum they're willing to pay (bid)
     or the minimum they're willing to accept (ask)
