@@ -1,9 +1,9 @@
-﻿using TradingEngineServer.Orders;
+using TradingEngineServer.Orders;
 
 namespace TradingEngineServer.OrderBook;
 // <summary>
-// Combines retrieval (read) and order entry (write) permissions.
-// This interface represents the full access required by the matching engine to process trades.
+// Retrieval interface of the orderbook.
+// Allows retrieving the full lists of active bid and ask orders.
 // </summary>
 public interface IRetrievalOrderBook: IReadonlyOrderBook
 {

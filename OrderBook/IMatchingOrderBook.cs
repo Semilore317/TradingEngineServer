@@ -1,9 +1,10 @@
-﻿namespace TradingEngineServer.OrderBook;
+namespace TradingEngineServer.OrderBook;
 
 // <summary>
-// allows to alter the state via matching and get info via the order entry interface
+// Combines retrieval (read) and order entry (write) permissions.
+// This interface represents the full access required by the matching engine to process trades.
 // </summary>
-public interface IMatchingOrderBook
+public interface IMatchingOrderBook : IRetrievalOrderBook, IOrderEntryOrderBook
 {
     
 }
