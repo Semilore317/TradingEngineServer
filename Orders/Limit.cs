@@ -10,6 +10,11 @@ public class Limit
     or the minimum they're willing to accept (ask)
     if a trader wants to buy Microsoft stock MSFT at $100.00, Limit == $100.00
     */
+
+    public Limit(long price)
+    {
+        Price = price;
+    }
     
     public long Price { get; set; }
     public OrderbookEntry? Head { get; set; }

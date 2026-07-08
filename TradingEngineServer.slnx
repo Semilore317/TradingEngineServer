@@ -1,5 +1,6 @@
 <Solution>
   <Folder Name="/Solution Items/" />
+  <Project Path="Instruments/Instruments.csproj" />
   <Project Path="Logging/Logging.csproj" />
   <Project Path="OrderBook/OrderBook.csproj" />
   <Project Path="Orders/Orders.csproj" />

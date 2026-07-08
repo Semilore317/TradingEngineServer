@@ -45,7 +45,7 @@ public class OrderBook : IRetrievalOrderBook
 
     public void AddOrder(Order order)
     {
-        throw new NotImplementedException();
+        var baseLimit = new Limit(order.Price);
     }
 
     public void ChangeOrder(ModifyOrder modifyOrder)

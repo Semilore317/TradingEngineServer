@@ -4,6 +4,8 @@
         <TargetFramework>net10.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
-    </PropertyGroup>
 
+        <RootNamespace>TradingEngineServer.Instrument</RootNamespace>
+        <AssemblyName>TradingEngineServer.Instrument</AssemblyName>
+    </PropertyGroup>
 </Project>
