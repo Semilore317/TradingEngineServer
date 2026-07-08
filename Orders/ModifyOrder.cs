@@ -28,4 +28,11 @@ public class ModifyOrder(
         Price,
         Quantity
     );
+    
+    
+    public CancelOrder ToCancelOrder() => new CancelOrder(
+        OrderId, 
+        SecurityId, 
+        Username
+    );
 }
