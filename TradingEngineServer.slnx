@@ -4,5 +4,6 @@
   <Project Path="Logging/Logging.csproj" />
   <Project Path="OrderBook/OrderBook.csproj" />
   <Project Path="Orders/Orders.csproj" />
+  <Project Path="Tests/Tests.csproj" />
   <Project Path="TradingEngineServer/TradingEngineServer.csproj" />
 </Solution>
