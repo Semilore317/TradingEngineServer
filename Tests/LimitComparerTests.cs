@@ -1,3 +1,4 @@
+using FluentAssertions;
 using Xunit;
 using TradingEngineServer.Orders;
 
@@ -21,7 +22,7 @@ public class LimitComparerTests
 
         //  Assert
         // Since Bids must be sorted highest-to-lowest (descending), $100.00 must sort before $99.00.
-        Assert.True(comparisonResult < 0, "Higher bid prices must sort before lower bid prices.");
+        comparisonResult.Should().BeLessThan(0, "Higher Bid Prices must sort before lower Bid Prices.");
     }
 
     [Fact]
@@ -36,7 +37,7 @@ public class LimitComparerTests
         int result = comparer.Compare(limit_1, limit_2);
         
         // Assert
-        Assert.True(result > 0, "Lower ask prices must sort before higher ask prices" );
+        result.Should().BeLessThan(0, "Lower ask prices must sort after higher ask prices.");
     }
 
     [Fact]
@@ -47,15 +48,14 @@ public class LimitComparerTests
         var validLimit = new Limit(10000);
 
         // Act & Assert
-        // xUnit's Assert class provides helper methods to check values:
+        0.Should().Be(comparer.Compare(null, null));
         
-        Assert.Equal(0, comparer.Compare(null, null));
-
         // Assert.True(booleanCondition) asserts that the condition evaluates to true.
         // null is less than a valid limit, so x (null) comes before y. Compare returns a negative number.
-        Assert.True(comparer.Compare(null, validLimit) < 0, "Null compared to a valid limit must sort first.");
-
+        0.Should().BeGreaterThan(comparer.Compare(null, validLimit));
+        
         // valid limit is greater than null, so y (null) comes after x. Compare returns a positive number.
         Assert.True(comparer.Compare(validLimit, null) > 0, "A valid limit compared to null must sort last.");
+        0.Should().BeLessThan(comparer.Compare(validLimit, null));
     }
 }

@@ -1,4 +1,5 @@
-﻿using TradingEngineServer.Orders;
+﻿using FluentAssertions;
+using TradingEngineServer.Orders;
 
 namespace Tests;
 
@@ -12,7 +13,7 @@ public class LimitTests
 
         var limit = new Limit(1500);
         var order1 = new Order(1, 1, "HRT", Side.Buy, 1500, 100);
-        var order2 = new Order(2, 2, "OPTV", Side.Buy, 1500, 1200);
+        var order2 = new Order(2, 2, "OPTIVER", Side.Buy, 1500, 1200);
 
         var entry1 = new OrderbookEntry(order1, limit);
         var entry2 = new OrderbookEntry(order2, limit);
@@ -28,7 +29,7 @@ public class LimitTests
         uint orderCount = limit.GetLevelOrderCount();
 
         // 3. Assert: Verify the sum matches the expected aggregate quantity. 
-        Assert.Equal(2, (int)orderCount);
+        2.Should().Be((int)orderCount);
     }
 
     [Fact]
@@ -37,8 +38,8 @@ public class LimitTests
         // Assert
         var limit = new Limit(1500);
 
-        var order1 = new Order(1, 1, "HRT", Side.Buy, 1500, 100);
-        var order2 = new Order(2, 2, "OPTV", Side.Buy, 1500, 1200);
+        var order1 = new Order(1, 1, "CITADEL SECURITIES", Side.Buy, 1500, 100);
+        var order2 = new Order(2, 2, "JANE STREET", Side.Buy, 1500, 1200);
 
         var entry1 = new OrderbookEntry(order1, limit);
         var entry2 = new OrderbookEntry(order2, limit);
@@ -53,7 +54,7 @@ public class LimitTests
         uint orderQuantity = limit.GetLevelOrderQuantity();
 
         // Assert
-        Assert.Equal(1300u, orderQuantity);
+        orderQuantity.Should().Be(1300u);
     }
     
     /// <summary>
@@ -65,8 +66,8 @@ public class LimitTests
     {
         // Arrange
         var limit  = new Limit(1500);
-        var order1 = new Order(1, 1, "HRT", Side.Buy, 1500, 100);
-        var order2 = new Order(2, 2, "OPTV", Side.Buy, 1500, 1200);
+        var order1 = new Order(1, 1, "JUMP TRADING", Side.Buy, 1500, 100);
+        var order2 = new Order(2, 2, "TWO SIGMA", Side.Buy, 1500, 1200);
         
         var entry1 = new OrderbookEntry(order1, limit);
         var entry2 = new OrderbookEntry(order2, limit);
@@ -83,21 +84,20 @@ public class LimitTests
         // Assert
         
         // count check
-        Assert.Equal(2, records.Count);
+        records.Count.Should().Be(2);
         
         // position checks
-        Assert.Equal(0u,  records[0].TheoreticalQueuePosition);
-        Assert.Equal(1u, records[1].TheoreticalQueuePosition);
+        records[0].TheoreticalQueuePosition.Should().Be(0u);
+        records[1].TheoreticalQueuePosition.Should().Be(1u);
         
         //property checks
-        Assert.Equal(1u, records[0].OrderId);
-        Assert.Equal(2u, records[1].OrderId);
+        records[0].OrderId.Should().Be(1u);
+        records[1].OrderId.Should().Be(2u);
         
-        Assert.Equal(100u, records[0].Quantity);
-        Assert.Equal(1200u, records[1].Quantity);
-        
-        Assert.Equal("HRT", records[0].Username);
-        Assert.Equal("OPTV", records[1].Username);
-        
+        records[0].Quantity.Should().Be(100u);
+        records[1].Quantity.Should().Be(1200u);
+
+        records[0].Username.Should().Be("JUMP TRADING");
+        records[1].Username.Should().Be("TWO SIGMA");
     } 
 }
