@@ -110,4 +110,23 @@ public class LimitTests
         var limit = new Limit(1500);
         limit.IsEmpty.Should().BeTrue();
     }
+
+    [Fact]
+    public void IsEmpty_WhenOrdersAddedAndRemoved_ShouldToggle()
+    {
+        // Verify the boolean accurately toggles as entries are injected into the Head/Tail.
+        var limit = new Limit(1500);
+        var order = new Order(1, 1, "JUMP TRADING", Side.Buy, 1500, 100);
+        var entry = new OrderbookEntry(order, limit);
+        
+        limit.Head = entry;
+        limit.Tail = entry;
+        
+        limit.IsEmpty.Should().BeFalse();
+
+        limit.Head = null;
+        limit.Tail = null;
+        
+        limit.IsEmpty.Should().BeTrue();
+    }
 }
