@@ -7,29 +7,35 @@ namespace Tests;
 
 public class OrderBookTest
 {
+    private Security _security;
+    private OrderBook _orderbook;
+
+    public OrderBookTest()
+    {
+        _security = new Security(1, "MSFT");
+        _orderbook = new OrderBook(_security);
+    }
+
     [Fact]
     public void AddOrder_ShouldInsertAndIndexCorrectly()
     {
         // Arrange
-        var security = new Security(1, "AAPL");
-        var orderbook = new OrderBook(security);
-
         var buyOrder = new Order(1, 1, "Jane Street", Side.Buy, 75, 100);
         var sellOrder = new Order(2, 2, "JPMORGAN CHASE", Side.Sell, 76, 100);
 
         // Act
-        orderbook.AddOrder(buyOrder);
-        orderbook.AddOrder(sellOrder);
+        _orderbook.AddOrder(buyOrder);
+        _orderbook.AddOrder(sellOrder);
 
-        var expectedSpread = orderbook.GetSpread();
+        var expectedSpread = _orderbook.GetSpread();
         var orderbookSpread = new OrderBookSpread(buyOrder.Price, sellOrder.Price);
 
         // Assert
-        orderbook.Count.Should().Be(2);
-        orderbook.ContainsOrder(buyOrder.OrderId).Should().BeTrue();
-        orderbook.ContainsOrder(sellOrder.OrderId).Should().BeTrue();
+        _orderbook.Count.Should().Be(2);
+        _orderbook.ContainsOrder(buyOrder.OrderId).Should().BeTrue();
+        _orderbook.ContainsOrder(sellOrder.OrderId).Should().BeTrue();
 
-        orderbook.GetSpread().Should().BeEquivalentTo(expectedSpread);
+        _orderbook.GetSpread().Should().BeEquivalentTo(expectedSpread);
     }
 
     /// <summary>
@@ -38,10 +44,6 @@ public class OrderBookTest
     [Fact]
     public void RemoveOrder_ShouldCleanUpAndPruneEmptyLimits()
     {
-        // Arrange
-        var security = new Security(1, "MSFT");
-        var orderbook = new OrderBook(security);
-
         var limit = new Limit(100);
 
         var order = new Order(1, 1, "HRT", Side.Buy, 75, 100);
@@ -50,24 +52,21 @@ public class OrderBookTest
         var cancelOrder = new CancelOrder(order.OrderId, order.SecurityId, order.Username);
 
         // Act
-        orderbook.AddOrder(order);
-        orderbook.RemoveOrder(cancelOrder);
+        _orderbook.AddOrder(order);
+        _orderbook.RemoveOrder(cancelOrder);
 
         // Assert
-        orderbook.Count.Should().Be(0);
-        orderbook.ContainsOrder(order.OrderId).Should().BeFalse();
-        orderbook.GetSpread().Ask.Should().BeNull();
-        orderbook.GetSpread().Bid.Should().BeNull();
-        orderbook.GetSpread().Spread.Should().BeNull();
+        _orderbook.Count.Should().Be(0);
+        _orderbook.ContainsOrder(order.OrderId).Should().BeFalse();
+        _orderbook.GetSpread().Ask.Should().BeNull();
+        _orderbook.GetSpread().Bid.Should().BeNull();
+        _orderbook.GetSpread().Spread.Should().BeNull();
     }
 
     [Fact]
     public void ChangeOrder_ShouldReplaceOriginalOrder()
     {
         // Arrange
-        var security = new Security(1, "SPCX");
-        var orderbook = new OrderBook(security);
-
         var limit = new Limit(100);
 
         var order = new Order(1, 2, "Goldman Sachs", Side.Buy, 75, 100);
@@ -82,18 +81,84 @@ public class OrderBookTest
             80);
 
         // Act
-        orderbook.AddOrder(order);
-        orderbook.ChangeOrder(modifyOrder);
+        _orderbook.AddOrder(order);
+        _orderbook.ChangeOrder(modifyOrder);
 
         // Assert
-        orderbook.Count.Should().Be(1);
-        orderbook.ContainsOrder(order.OrderId).Should().BeTrue();
+        _orderbook.Count.Should().Be(1);
+        _orderbook.ContainsOrder(order.OrderId).Should().BeTrue();
 
-        var bidOrders = orderbook.GetBidOrders();
-        var askOrders = orderbook.GetAskOrders();
+        var bidOrders = _orderbook.GetBidOrders();
+        var askOrders = _orderbook.GetAskOrders();
         bidOrders.Should().BeEmpty();
         askOrders.Should().ContainSingle();
         askOrders[0].CurrentQuantity.Should().Be(80, "The order quantity should update to the correct price");
         askOrders[0].Side.Should().Be(Side.Sell);
+    }
+
+    [Fact]
+    public void GetSpread_WhenBookIsEmpty_ShouldReturnEmptySpread()
+    {
+        _orderbook.GetSpread().Spread.Should().BeNull();
+    }
+
+    [Fact]
+    public void GetSpread_WhenOnlyBidsOrAsks_ShouldReturnPartialSpread()
+    {
+        // Verify the spread returns null for the missing side and correctly resolves the populated side.
+        var bidOrder = new Order(1, 1, "Citadel", Side.Buy, 100, 50);
+        _orderbook.AddOrder(bidOrder);
+
+        var spread = _orderbook.GetSpread();
+
+        spread.Bid.Should().Be(100, "The Highest bid price should be reflected");
+        spread.Ask.Should().BeNull("There are no asks in the order book");
+        spread.Spread.Should().BeNull("Spread cannot be calculated without both bid and ask");
+    }
+
+    [Fact]
+    public void GetAskOrders_ShouldReturnEntriesInCorrectOrder()
+    {
+        // arrange
+        var cheapAsk = new Order(1, 1, "Goldman Sachs", Side.Sell,  70, 100 );
+        var midAsk = new Order(2, 1, "Goldman Sachs", Side.Sell, 75, 100);
+        var expensiveAsk = new Order(3, 1, "Goldman Sachs", Side.Sell, 80, 100);
+        
+        _orderbook.AddOrder(cheapAsk);
+        _orderbook.AddOrder(midAsk);
+        _orderbook.AddOrder(expensiveAsk);
+        
+        var _askOrders = _orderbook.GetAskOrders();
+        
+        // assert
+        _askOrders.Count.Should().Be(3);
+        
+        // should be sorted in ascending order
+        _askOrders[0].Price.Should().Be(70);
+        _askOrders[1].Price.Should().Be(75);
+        _askOrders[2].Price.Should().Be(80);
+    }
+
+    [Fact]
+    public void GetBidOrders_ShouldReturnEntriesInCorrectOrder()
+    {
+        // arrange
+        var cheapBid = new Order(1, 1, "Jane Street",  Side.Buy, 70, 100);
+        var midBid = new Order(2, 1, "Jane Street", Side.Buy, 75, 100);
+        var expensiveBid = new Order(3, 1, "Jane Street", Side.Buy, 80, 100);
+        
+        _orderbook.AddOrder(cheapBid);
+        _orderbook.AddOrder(midBid);
+        _orderbook.AddOrder(expensiveBid);
+        
+        var _bidOrders = _orderbook.GetBidOrders();
+        
+        // assert
+        _orderbook.Count.Should().Be(3);
+        
+        // order book should be sorted in descending order
+        _bidOrders[0].Price.Should().Be(80);
+        _bidOrders[1].Price.Should().Be(75);
+        _bidOrders[2].Price.Should().Be(70);
     }
 }
