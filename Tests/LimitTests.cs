@@ -99,5 +99,15 @@ public class LimitTests
 
         records[0].Username.Should().Be("JUMP TRADING");
         records[1].Username.Should().Be("TWO SIGMA");
-    } 
+    }
+
+    /// <summary>
+    /// asserts that a brand new limit is empty
+    /// </summary>
+    [Fact]
+    public void IsEmpty_WhenNoOrders_ShouldBeTrue()
+    {
+        var limit = new Limit(1500);
+        limit.IsEmpty.Should().BeTrue();
+    }
 }
