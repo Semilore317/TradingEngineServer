@@ -78,10 +78,11 @@ public class OrderBookTest
             order.SecurityId,
             order.Username,
             Side.Sell,
-            80,
-            order.CurrentQuantity);
+            order.Price,
+            80);
 
         // Act
+        orderbook.AddOrder(order);
         orderbook.ChangeOrder(modifyOrder);
 
         // Assert

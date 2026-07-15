@@ -29,7 +29,7 @@ public class LimitComparerTests
     public void AskLimitComparer_ShouldSortAscending()
     {
         // Arrange
-        var comparer = BidLimitComparer.Comparer;
+        var comparer = AskLimitComparer.Comparer;
         var limit_1 = new Limit(1500);
         var limit_2 = new Limit(1600);
         
@@ -37,7 +37,7 @@ public class LimitComparerTests
         int result = comparer.Compare(limit_1, limit_2);
         
         // Assert
-        result.Should().BeLessThan(0, "Lower ask prices must sort after higher ask prices.");
+        result.Should().BeLessThan(0, "Lower ask prices must sort before higher ask prices.");
     }
 
     [Fact]
