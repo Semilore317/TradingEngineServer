@@ -1,6 +1,9 @@
+using System.Runtime.CompilerServices;
 using Instruments;
 using TradingEngineServer.Orders;
 
+// grants private fields access without compromising encapsulation
+[assembly: InternalsVisibleTo("MatchingEngine")] 
 namespace TradingEngineServer.OrderBook;
 
 public class OrderBook : IRetrievalOrderBook
@@ -12,8 +15,13 @@ public class OrderBook : IRetrievalOrderBook
     
     // SortedSets of Limit price levels
     private readonly SortedSet<Limit> _askLimits = new SortedSet<Limit>(AskLimitComparer.Comparer);
-    private readonly SortedSet<Limit> _bidLimits = new SortedSet<Limit>(BidLimitComparer.Comparer); // FIXED: Use BidLimitComparer
-    
+    private readonly SortedSet<Limit> _bidLimits = new SortedSet<Limit>(BidLimitComparer.Comparer);
+
+    // exposed as internal so only trusted assemblies (MatchingEngine ...for now) can access them
+    internal SortedSet<Limit> AskLimits => _askLimits;
+    internal SortedSet<Limit> BidLimits => _bidLimits;
+    internal Dictionary<long, OrderbookEntry> Orders => _orders;
+
     public OrderBook(Security instrument)
     {
         _instrument = instrument;
