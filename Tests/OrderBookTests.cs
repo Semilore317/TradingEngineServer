@@ -5,12 +5,12 @@ using FluentAssertions;
 
 namespace Tests;
 
-public class OrderBookTest
+public class OrderBookTests
 {
     private Security _security;
     private OrderBook _orderbook;
 
-    public OrderBookTest()
+    public OrderBookTests()
     {
         _security = new Security(1, "MSFT");
         _orderbook = new OrderBook(_security);
