@@ -6,9 +6,9 @@ namespace TradingEngineServer.MatchingEngine.Algorithms;
 /// Price-Time Priority (FIFO) matching algorithm
 /// At each price level, the oldest resting order (Head of the linked list) fills first.
 /// </summary>
-public class Fifo : IMatchingAlgorithms
+public class Fifo : IMatchingAlgorithm
 {
-    public static readonly IMatchingAlgorithms Instance = new Fifo();
+    public static readonly IMatchingAlgorithm Instance = new Fifo();
     
     private Fifo() {} // enforces singleton pattern
 
