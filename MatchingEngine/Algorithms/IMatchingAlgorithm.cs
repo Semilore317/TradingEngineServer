@@ -2,7 +2,7 @@
 
 namespace TradingEngineServer.MatchingEngine.Algorithms;
 
-public interface IMatchingAlgorithms
+public interface IMatchingAlgorithm
 {
     MatchResult Match(
         SortedSet<Limit> bidLimits, 
