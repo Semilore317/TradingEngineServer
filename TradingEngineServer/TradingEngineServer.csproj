@@ -23,6 +23,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\Logging\Logging.csproj" />
+        <ProjectReference Include="..\MatchingEngine\MatchingEngine.csproj" />
         <ProjectReference Include="..\Orders\Orders.csproj" />
     </ItemGroup>
 

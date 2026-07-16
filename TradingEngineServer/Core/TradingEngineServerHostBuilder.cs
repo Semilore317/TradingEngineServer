@@ -1,31 +1,64 @@
+using System.Threading.Channels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using System;
-using System.Collections.Generic;
-using System.Reflection.Metadata.Ecma335;
-using System.Text;
+using Microsoft.Extensions.Options;
 using TradingEngineServer.Core.Configuration;
 using TradingEngineServer.Logging;
 using TradingEngineServer.Logging.Configuration;
+using TradingEngineServer.MatchingEngine;
+using TradingEngineServer.MatchingEngine.Algorithms;
+using TradingEngineServer.MatchingEngine.Configuration;
+using MatchingEngineSingleton = TradingEngineServer.MatchingEngine.MatchingEngine;
 
-namespace TradingEngineServer.Core
+namespace TradingEngineServer.Core;
+
+/// <summary>
+/// stands up the application, it wires:
+/// 1. configurations from the appsettings.json file
+/// 2. DI... registers services so they can be auto-constructed
+/// 3. Hosting.... starts and manages the life-cycle of long-running services
+/// </summary>
+public sealed class TradingEngineServerHostBuilder
 {
-    public sealed class TradingEngineServerHostBuilder
-    {
-        public static IHost BuildTradingEngineServer()
-            => Host.CreateDefaultBuilder()
-                .UseContentRoot(AppContext.BaseDirectory)
-                .ConfigureServices((context, services)
-                =>{
-                    services.AddOptions();
-                    services.Configure<TradingEngineServerConfiguration>(context.Configuration.GetSection(nameof(TradingEngineServerConfiguration)));
-                    services.Configure<LoggingConfiguration>(context.Configuration.GetSection(nameof(LoggingConfiguration)));
+    public static IHost BuildTradingEngineServer()
+        => Host.CreateDefaultBuilder()
+            
+            .UseContentRoot(AppContext.BaseDirectory)
+            
+            // DI stuff
+            .ConfigureServices((
+                    context, // --> loaded configurations aka appsettings.json
+                    services // DI contianer stuff is loaded into
+                    )
+                =>
+            {
+                services.AddOptions(); // enables the IOptions<T> system
+                
+                // reads from the appsettings.json directly
+                services.Configure<TradingEngineServerConfiguration>(
+                    context.Configuration.GetSection(nameof(TradingEngineServerConfiguration)));
+                services.Configure<LoggingConfiguration>(
+                    context.Configuration.GetSection(nameof(LoggingConfiguration)));
+                services.Configure<MatchingEngineConfiguration>(
+                    context.Configuration.GetSection(nameof(MatchingEngineConfiguration)));
 
-                    services.AddSingleton<ITradingEngineServer, TradingEngineServer>();
-                    services.AddSingleton<ITextLogger, TextLogger>();
+                // when any service asks for any of these, create one and give them that
+                // and only ever create one instance (singleton) for the whole application lifetime
+                services.AddSingleton<ITradingEngineServer, TradingEngineServer>();
+                services.AddSingleton<ITextLogger, TextLogger>();
+                services.AddSingleton<IMatchingAlgorithm>(sp =>
+                {
+                    var configuration = sp.GetRequiredService<IOptions<MatchingEngineConfiguration>>().Value;
+                    return configuration.Algorithm switch
+                    {
+                        MatchingAlgorithmType.Fifo => Fifo.Instance,
+                        _ => throw new InvalidOperationException(
+                            $"Algorithm '{configuration.Algorithm}' not supported")
+                    };
+                });
 
-                    // add hosted service
-                    services.AddHostedService<TradingEngineServer>();
-                }).Build();
-    }
+                // add hosted service
+                services.AddHostedService<TradingEngineServer>();
+                services.AddSingleton<IMatchingEngine, MatchingEngineSingleton>();
+            }).Build();
 }
