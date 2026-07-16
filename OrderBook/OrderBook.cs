@@ -140,12 +140,7 @@ public class OrderBook : IRetrievalOrderBook
         if (_orders.TryGetValue(modifyOrder.OrderId, out OrderbookEntry? orderbookEntry)) 
         {
            RemoveOrder(modifyOrder.ToCancelOrder());
-           AddOrder(
-               modifyOrder.ToNewOrder(),
-               orderbookEntry.ParentLimit,
-               modifyOrder.IsBuySide ? _bidLimits : _askLimits,
-               _orders
-               );
+           AddOrder(modifyOrder.ToNewOrder());
         }
     }
 

@@ -1,4 +1,4 @@
-﻿using TradingEngineServer.Orders;
+using TradingEngineServer.Orders;
 
 namespace TradingEngineServer.Orders;
 
@@ -11,7 +11,6 @@ public class Order(long orderId, long securityId, string username, Side side, lo
     public bool IsBuySide =>  Side == Side.Buy;
     
     
-    
     // currentQUantity initially matches initialQuantity
     public uint CurrentQuantity { get; private set; } = initialQuantity;
 
@@ -20,7 +19,7 @@ public class Order(long orderId, long securityId, string username, Side side, lo
     {
         if (amount > CurrentQuantity)
         {
-            throw new ArgumentOutOfRangeException(nameof(amount));
+            throw new ArgumentOutOfRangeException(nameof(amount), "Decrement amount cannot be greater than the current quantity.");
         }
         else
         {
