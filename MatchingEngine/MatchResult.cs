@@ -1,4 +1,4 @@
-﻿namespace TradingEngineServer.OrderBook;
+﻿namespace TradingEngineServer.MatchingEngine;
 
 public class MatchResult
 {

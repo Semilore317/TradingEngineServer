@@ -6,5 +6,5 @@ namespace TradingEngineServer.OrderBook;
 // </summary>
 public interface IMatchingOrderBook : IRetrievalOrderBook 
 {
-    MatchResult Match();
+    void Match();
 }

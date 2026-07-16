@@ -1,8 +1,7 @@
 ﻿using Instruments;
-using TradingEngineServer.OrderBook;
 using TradingEngineServer.Orders;
 
-namespace MatchingEngine;
+namespace TradingEngineServer.MatchingEngine;
 
 public interface IMatchingEngine
 {
