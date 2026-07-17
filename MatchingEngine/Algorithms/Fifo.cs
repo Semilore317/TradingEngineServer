@@ -1,4 +1,4 @@
-﻿using TradingEngineServer.Orders;
+using TradingEngineServer.Orders;
 
 namespace TradingEngineServer.MatchingEngine.Algorithms;
 
@@ -33,6 +33,9 @@ public class Fifo : IMatchingAlgorithm
             parentLimit.Tail = entry.Previous;
 
         orders.Remove(entry.OrderId);
+
+        if (parentLimit.IsEmpty)
+            limitLevel.Remove(parentLimit);
     }
 
     public MatchResult Match(
