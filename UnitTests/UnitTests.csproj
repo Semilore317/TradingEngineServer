@@ -21,6 +21,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\Instruments\Instruments.csproj" />
+      <ProjectReference Include="..\MatchingEngine\MatchingEngine.csproj" />
       <ProjectReference Include="..\OrderBook\OrderBook.csproj" />
       <ProjectReference Include="..\Orders\Orders.csproj" />
     </ItemGroup>

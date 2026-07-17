@@ -1,7 +1,7 @@
 using FluentAssertions;
 using TradingEngineServer.Orders;
 
-namespace Tests;
+namespace UnitTests;
 
 /// <summary>
 /// i'm simply checking for pointer linkage and limit references

@@ -1,7 +1,7 @@
 ﻿using FluentAssertions;
 using TradingEngineServer.Orders;
 
-namespace Tests;
+namespace UnitTests;
 
 /// <summary>
 /// ModifyOrder acts as a payload that generates cancellation and replenishment orders.

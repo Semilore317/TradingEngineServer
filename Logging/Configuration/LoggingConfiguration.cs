@@ -2,6 +2,11 @@
 
 public class LoggingConfiguration
 {
+    public LoggingConfiguration(TextLoggerConfiguration textLoggerConfiguration)
+    {
+        TextLoggerConfiguration = textLoggerConfiguration;
+    }
+
     public LoggerType LoggerType { get; set; }
     public TextLoggerConfiguration TextLoggerConfiguration { get; set; } // Fixed type here
     
@@ -10,7 +15,7 @@ public class LoggingConfiguration
 
 public class TextLoggerConfiguration
 {
-    public string Directory { get; set; }
-    public string FileName { get; set; } 
-    public string FileExtension { get; set; }
+    public string Directory { get; set; } = string.Empty;
+    public string FileName { get; set; } = string.Empty;
+    public string FileExtension { get; set; } = string.Empty;
 }

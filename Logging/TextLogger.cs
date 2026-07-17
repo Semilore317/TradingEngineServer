@@ -6,13 +6,10 @@ namespace TradingEngineServer.Logging;
 
 public class TextLogger : AbstractLogger, ITextLogger
 {
-    private readonly LoggingConfiguration _loggingConfiguration;
-
-    
     public TextLogger(IOptions<LoggingConfiguration> loggingConfiguration) : base()
     {
-        _loggingConfiguration = loggingConfiguration.Value ?? throw new ArgumentNullException(nameof(loggingConfiguration));
-        var config = _loggingConfiguration.TextLoggerConfiguration ?? throw new InvalidOperationException("TextLoggerConfiguration is missing.");
+        var loggingConfiguration1 = loggingConfiguration.Value ?? throw new ArgumentNullException(nameof(loggingConfiguration));
+        var config = loggingConfiguration1.TextLoggerConfiguration ?? throw new InvalidOperationException("TextLoggerConfiguration is missing.");
         
         // create the directory (if it doesn't exist) and start logging in a file
         
@@ -66,7 +63,7 @@ public class TextLogger : AbstractLogger, ITextLogger
     protected override void Log(LogLevel logLevel, string module, string message)
     {
         _logQueue.Post(new LogInfo(logLevel, module, message, DateTime.Now, Thread.CurrentThread.ManagedThreadId,
-            Thread.CurrentThread.Name));
+            Thread.CurrentThread.Name!));
     }
 
     // Finalizer Queue.... kinda like a destructor in C++ but not realaly

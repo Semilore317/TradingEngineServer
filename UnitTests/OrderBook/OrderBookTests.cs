@@ -3,7 +3,7 @@ using TradingEngineServer.OrderBook;
 using TradingEngineServer.Orders;
 using FluentAssertions;
 
-namespace Tests;
+namespace UnitTests;
 
 public class OrderBookTests
 {
