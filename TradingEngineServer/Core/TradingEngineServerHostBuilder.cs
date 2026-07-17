@@ -52,6 +52,7 @@ public sealed class TradingEngineServerHostBuilder
                     return configuration.Algorithm switch
                     {
                         MatchingAlgorithmType.Fifo => Fifo.Instance,
+                        MatchingAlgorithmType.ProRata => ProRata.Instance,
                         _ => throw new InvalidOperationException(
                             $"Algorithm '{configuration.Algorithm}' not supported")
                     };
