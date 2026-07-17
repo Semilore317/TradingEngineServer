@@ -23,7 +23,7 @@ public class AllocateProRataTests
 
         foreach (var (orderId, quantity) in orders)
         {
-            var order = new Order(orderId, 1, "Belvedere", Side.Buy, price, quantity);
+            var order = new Order(orderId,securityId: 1, username:"Belvedere", Side.Buy, price, quantity);
             var entry = new OrderbookEntry(order, limit);
 
             entry.Previous = previous;
@@ -127,5 +127,4 @@ public class AllocateProRataTests
         result.Count.Should().Be(1);
         result[0].Allocated.Should().Be((Math.Min(incomingQuantity, restingQuantity)));
     }
-
 }
