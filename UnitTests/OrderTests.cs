@@ -1,7 +1,7 @@
 ﻿using FluentAssertions;
 using TradingEngineServer.Orders;
 
-namespace Tests;
+namespace UnitTests;
 
 public class OrderTests
 {

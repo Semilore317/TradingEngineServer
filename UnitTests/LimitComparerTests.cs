@@ -2,7 +2,7 @@ using FluentAssertions;
 using Xunit;
 using TradingEngineServer.Orders;
 
-namespace Tests;
+namespace UnitTests;
 
 public class LimitComparerTests
 {
