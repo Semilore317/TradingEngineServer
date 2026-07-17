@@ -26,4 +26,8 @@
       <ProjectReference Include="..\Orders\Orders.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="MatchingEngine\" />
+    </ItemGroup>
+
 </Project>
