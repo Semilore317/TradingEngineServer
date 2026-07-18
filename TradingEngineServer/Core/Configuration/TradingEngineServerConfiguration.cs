@@ -11,8 +11,8 @@ namespace TradingEngineServer.Core.Configuration
 
     class TradingServerSettings
     {
-        public string ServerName { get; set; }
+        public required string ServerName { get; set; }
         public int Port { get; set; }
-        public string Host { get; set; }
+        public required string Host { get; set; }
     }
 }
