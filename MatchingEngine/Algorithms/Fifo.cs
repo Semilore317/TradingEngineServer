@@ -9,8 +9,10 @@ namespace TradingEngineServer.MatchingEngine.Algorithms;
 public class Fifo : IMatchingAlgorithm
 {
     public static readonly IMatchingAlgorithm Instance = new Fifo();
-    
-    private Fifo() {} // enforces singleton pattern
+
+    private Fifo()
+    {
+    } // enforces singleton pattern
 
     public static void RemoveFilledOrder(
         OrderbookEntry entry,
@@ -24,7 +26,7 @@ public class Fifo : IMatchingAlgorithm
             entry.Previous.Next = entry.Next;
         if (entry.Next != null)
             entry.Next.Previous = entry.Previous;
-        
+
         // update the head and tail pointers
         if (parentLimit.Head == entry)
             parentLimit.Head = entry.Next;
@@ -38,52 +40,53 @@ public class Fifo : IMatchingAlgorithm
             limitLevel.Remove(parentLimit);
     }
 
-    public MatchResult Match(
+    public MatchResult MatchIncoming(
+        Order incoming,
         SortedSet<Limit> bidLimits,
         SortedSet<Limit> askLimits,
         Dictionary<long, OrderbookEntry> orders)
     {
         List<Fill> fills = new List<Fill>();
 
+        // a buy aggressor lifts the asks; a sell aggressor hits the bids
+        SortedSet<Limit> restingLimits = incoming.IsBuySide ? askLimits : bidLimits;
+
         while (bidLimits.Count > 0 && askLimits.Count > 0)
         {
-            Limit bestBid = bidLimits.Min!; // BidLimitComparer... descending -> Min = highest price
-            Limit bestAsk = askLimits.Min!; // AskLimitComparer... ascending -> Min = lowest price
+            Limit bestLevel = restingLimits.Min!;
 
-            // if spread hasn't crossed, no match possible
-            if (bestBid.Price < bestAsk.Price)
+            // does the incoming price cross this limit level?
+            bool crosses = incoming.IsBuySide
+                ? incoming.Price >= bestLevel.Price
+                : incoming.Price <= bestLevel.Price;
+
+            if (!crosses)
                 break;
 
-            // Head --> oldest order at this price level
-            OrderbookEntry bidEntry = bestBid.Head!;
-            OrderbookEntry askEntry = bestAsk.Head!;
+            OrderbookEntry? restingEntry = bestLevel.Head; // oldest order at the level (FIFO) 
 
-            uint filledQuantity = Math.Min(bidEntry.CurrentQuantity, askEntry.CurrentQuantity);
+            uint tradeQuantity = Math.Min(incoming.CurrentQuantity, restingEntry.CurrentQuantity);
+            long executionPrice = bestLevel.Price; // resting order now sets the price
 
             // resting/passive side sets the execution price
-            // both orders were already in the book, use the ask price as a convention
-            long executionPrice = askEntry.Price;
-
-            bidEntry.DecrementQuantity(filledQuantity);
-            askEntry.DecrementQuantity(filledQuantity);
-
+            incoming.DecrementQuantity(tradeQuantity);
+            restingEntry.DecrementQuantity(tradeQuantity);
 
             fills.Add(new Fill
             {
-                SecurityId = bidEntry.SecurityId,
-                BidOrderId = bidEntry.OrderId,
-                AskOrderId = askEntry.OrderId,
+                SecurityId = incoming.SecurityId,
+                BidOrderId = incoming.IsBuySide ? incoming.OrderId : restingEntry.OrderId,
+                AskOrderId = incoming.IsBuySide ? restingEntry.OrderId : incoming.OrderId,
                 ExecutionPrice = executionPrice,
                 FilledAt = DateTime.UtcNow,
-                FilledQuantity = filledQuantity
+                FilledQuantity = tradeQuantity
             });
 
-            //TODO: clean up filled orders
-            if(bidEntry.CurrentQuantity == 0)
-                RemoveFilledOrder(bidEntry, bidLimits ,orders);
-            if(askEntry.CurrentQuantity == 0)
-                RemoveFilledOrder(askEntry, askLimits, orders);
+            //clean up filled orders
+            if (restingEntry.CurrentQuantity == 0)
+                RemoveFilledOrder(restingEntry, restingLimits, orders);
         }
+
         return new MatchResult(fills);
     }
 }
