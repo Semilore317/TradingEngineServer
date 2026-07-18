@@ -18,9 +18,9 @@ namespace Valkyrie.Core;
 /// 2. DI... registers services so they can be auto-constructed
 /// 3. Hosting.... starts and manages the life-cycle of long-running services
 /// </summary>
-public sealed class TradingEngineServerHostBuilder
+public sealed class ValkyrieHostBuilder
 {
-    public static IHost BuildTradingEngineServer()
+    public static IHost BuildValkyrie()
         => Host.CreateDefaultBuilder()
             
             .UseContentRoot(AppContext.BaseDirectory)
@@ -35,8 +35,8 @@ public sealed class TradingEngineServerHostBuilder
                 services.AddOptions(); // enables the IOptions<T> system
                 
                 // reads from the appsettings.json directly
-                services.Configure<TradingEngineServerConfiguration>(
-                    context.Configuration.GetSection(nameof(TradingEngineServerConfiguration)));
+                services.Configure<ValkyrieConfiguration>(
+                    context.Configuration.GetSection(nameof(ValkyrieConfiguration)));
                 services.Configure<LoggingConfiguration>(
                     context.Configuration.GetSection(nameof(LoggingConfiguration)));
                 services.Configure<MatchingEngineConfiguration>(
@@ -44,7 +44,7 @@ public sealed class TradingEngineServerHostBuilder
 
                 // when any service asks for any of these, create one and give them that
                 // and only ever create one instance (singleton) for the whole application lifetime
-                services.AddSingleton<ITradingEngineServer, TradingEngineServer>();
+                services.AddSingleton<IValkyrie, Valkyrie>();
                 services.AddSingleton<ITextLogger, TextLogger>();
                 services.AddSingleton<IMatchingAlgorithm>(sp =>
                 {
@@ -59,7 +59,7 @@ public sealed class TradingEngineServerHostBuilder
                 });
 
                 // add hosted service
-                services.AddHostedService<TradingEngineServer>();
+                services.AddHostedService<Valkyrie>();
                 services.AddSingleton<IMatchingEngine, MatchingEngineSingleton>();
             }).Build();
 }

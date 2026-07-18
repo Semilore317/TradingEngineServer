@@ -9,18 +9,18 @@ using Valkyrie.Logging;
 
 namespace Valkyrie.Core
 {
-    sealed class TradingEngineServer : BackgroundService, ITradingEngineServer
+    sealed class Valkyrie : BackgroundService, IValkyrie
     {
         private readonly ITextLogger _logger;
-        private readonly TradingEngineServerConfiguration _tradingEngineServerconfig;
+        private readonly ValkyrieConfiguration _config;
 
-        public TradingEngineServer(
+        public Valkyrie(
             ITextLogger textLogger,
-            IOptions<TradingEngineServerConfiguration> config
+            IOptions<ValkyrieConfiguration> config
         )
         {
             _logger = textLogger ?? throw new ArgumentNullException(nameof(textLogger));
-            _tradingEngineServerconfig = config.Value ?? throw new ArgumentNullException(nameof(config));
+            _config = config.Value ?? throw new ArgumentNullException(nameof(config));
         }
 
         public Task Run(CancellationToken token)

@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Valkyrie.Core
 {
-    interface ITradingEngineServer
+    interface IValkyrie
     {
         Task Run(CancellationToken token);
     }

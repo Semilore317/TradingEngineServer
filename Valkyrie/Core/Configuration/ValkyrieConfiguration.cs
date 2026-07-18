@@ -4,9 +4,9 @@ using System.Text;
 
 namespace Valkyrie.Core.Configuration
 {
-    class TradingEngineServerConfiguration
+    class ValkyrieConfiguration
     {
-    public TradingEngineServerSettings TradingEngineServerSettings { get; set; }
+    public ValkyrieSettings ValkyrieSettings { get; set; }
     }
 
     class TradingServerSettings
