@@ -9,7 +9,7 @@ public class OrderbookEntry: Order
     
     // i'm avoiding primary constructors here because it's less dense without it in this scenario
     public OrderbookEntry(Order order, Limit parentLimit) :
-        base(order.OrderId, order.SecurityId, order.Username, order.Side, order.Price, order.InitialQuantity)
+        base(order.OrderId, order.SecurityId, order.Username, order.Side, order.Price, order.CurrentQuantity)
     {
         CreationTime = DateTime.UtcNow;
         ParentLimit = parentLimit;
