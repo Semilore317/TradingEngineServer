@@ -59,13 +59,14 @@ public class FIfoTests
         var bidLimits = new SortedSet<Limit>(BidComparer);
         var askLimits = new SortedSet<Limit>(AskComparer);
 
-        bidLimits.Add(BuildLevel(99, Side.Buy, orders, (1, 100u)));
         askLimits.Add(BuildLevel(100, Side.Sell, orders, (2, 100u)));
 
-        var result = Fifo.Instance.Match(bidLimits, askLimits, orders);
+        var incoming = new Order(1, 1, "Optiver", Side.Buy, 99, 100u);
+
+        var result = Fifo.Instance.MatchIncoming(incoming, bidLimits, askLimits, orders);
         
         result.Fills.Should().BeEmpty();
-        orders.Count.Should().Be(2);
+        orders.Count.Should().Be(1);
     }
 
     [Fact]
@@ -75,11 +76,11 @@ public class FIfoTests
         var bidLimits = new SortedSet<Limit>(BidComparer);
         var askLimits = new SortedSet<Limit>(AskComparer);
         
-        bidLimits.Add(BuildLevel(99, Side.Buy, orders, (1, 100u))); 
         askLimits.Add(BuildLevel(99, Side.Sell, orders, (2, 100u)));
+
+        var incoming = new Order(1, 1, "Jane Street", Side.Buy, 99, 100u);
         
-        
-        var result = Fifo.Instance.Match(bidLimits, askLimits, orders);
+        var result = Fifo.Instance.MatchIncoming(incoming, bidLimits, askLimits, orders);
 
         result.Fills.Count.Should().Be(1);
 
@@ -93,5 +94,26 @@ public class FIfoTests
         orders.Should().BeEmpty();
         bidLimits.Should().BeEmpty();
         askLimits.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void CrossedBook_ExecutesAtRestingOrderPrice()
+    {
+        var orders = new Dictionary<long, OrderbookEntry>();
+        var bidLimits = new SortedSet<Limit>(BidComparer);
+        var askLimits = new SortedSet<Limit>(AskComparer);
+        
+        bidLimits.Add(BuildLevel(101, Side.Sell, orders, (1, 100u)));
+        var incoming = new Order(2, 1, "JP Morgan", Side.Sell, 100, 100u);
+        
+        var result = ProRata.Instance.MatchIncoming(incoming, bidLimits, askLimits, orders);
+
+        result.Fills.Count.Should().Be(1);
+        var fill = result.Fills[0];
+        fill.BidOrderId.Should().Be(1);         // resting buyer
+        fill.AskOrderId.Should().Be(2);         // incoming seller
+        fill.ExecutionPrice.Should().Be(101);   // resting price wins!!!
+        fill.FilledQuantity.Should().Be(100);
+
     }
 }
