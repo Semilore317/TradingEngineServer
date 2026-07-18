@@ -1,100 +1,124 @@
+# TradingEngineServer
 
-A pet project built from scratch on **.NET 10** using C# to understand the fundamentals of quantitative development (quant-dev) workflows, order matching logic, and electronic trading architectures.
+A limit order book and matching engine written from scratch in C# on **.NET 10**. FIFO and pro-rata matching, strict price-time priority, and an async logging pipeline. 
+There are no exchange libraries: the book, the matching loop, and the allocation math are all custom.
 
 ---
 
-## Repository Architecture
+## What is it?
 
-The solution is divided into distinct modules to separate concerns:
+An in-memory trading engine that maintains a live bid/ask book per instrument and matches incoming orders against it. I built it to work through the fundamentals of electronic trading infrastructure: order-book data structures, matching algorithms, and the low-latency-minded design choices that come with them.
 
-```text
-TradingEngineServer/ (Solution Root)
-├── Logging/              # Custom logging library (capabilites for db logging scaffolded but to be fully implemented later)
-├── Instruments/          # Financial instrument reference data (Security)
-├── Orders/               # Domain models: order types, limit levels, comparers
-├── OrderBook/            # Order book engine: interfaces, matching book, spread
-├── Tests/                # xUnit unit test suite (Fluent Assertions)
-└── TradingEngineServer/  # Main application host & DI shell
+Two matching algorithms are present today, selectable from config:
+
+- **FIFO (price-time priority)**: the oldest resting order at a price level fills first.
+- **Pro-rata**: incoming volume is split across resting orders relative to their size.
+
+---
+
+## Matching in action
+
+**Pro-rata** allocates an incoming order across resting orders by *size*, not arrival time, the same way many futures markets fill:
+
+```
+Resting asks @ $1.00 :  #2 = 100    #3 = 200    #4 = 300      ==> 600 total
+Incoming buy         :  300 @ $1.00
+
+Fills                :  #2 → 50     #3 → 100    #4 → 150
+                        each resting order gets 50% of its size; leftover lots are
+                        handed out by largest fractional remainder, tie-broken by
+                        time priority (FIFO)
 ```
 
-### 1. `TradingEngineServer` (Main Host)
-*   **Purpose:** Application entry point and hosting lifecycle manager.
-*   Uses Microsoft Generic Host, Options pattern (`appsettings.json`), and Dependency Injection.
-
-### 2. `Logging`
-*   **Purpose:** Asynchronous text logger that offloads file writes from hot execution threads.
-*   Uses a thread-safe `BufferBlock` queue and a background writer task.
-*   Drains all queued logs cleanly on process disposal/cancellation.
-
-### 3. `Instruments`
-*   **Purpose:** Reference data library for tradable financial instruments.
-*   Defines `Security` — a simple, immutable model carrying a `SecurityId` and ticker `Symbol`.
-*   Kept separate from execution logic so instrument metadata never bleeds into the matching path.
-
-### 4. `Orders` (Domain Models)
-*   **Purpose:** Core domain models for orders, limit levels, and sorting rules.
-*   **Immutability:** Identity fields are read-only via `IOrderCore` / `OrderCore` — prevents state corruption during matching.
-*   **Memory Efficiency:** `OrderbookEntry` inherits directly from `Order` to act as a doubly-linked list node, eliminating redundant allocations.
-*   **Cents-Based Pricing:** All prices are `long` (cents/ticks) to avoid floating-point rounding errors. Quantities are `uint`.
-*   **Strict Sorting:** `BidLimitComparer` (descending) and `AskLimitComparer` (ascending) with null guards for safe use inside `SortedSet<T>`.
-
-### 5. `OrderBook` (Order Book Engine)
-*   **Purpose:** Maintains the live bid/ask book, enforces price-time priority, and exposes a tiered interface hierarchy.
-*   **Interface Hierarchy:** `IReadonlyOrderBook` ← `IOrderEntryOrderBook` ← `IRetrievalOrderBook` ← `IMatchingOrderBook` — each layer restricts mutation access to the appropriate consumer.
-*   **Data Structures:** `SortedSet<Limit>` for O(log n) price level insertion; `Dictionary<long, OrderbookEntry>` for O(1) order lookup.
-*   **Memory Safety:** Cancelling the last order on a price level automatically removes the empty `Limit` from the sorted set, preventing unbounded memory growth.
-
-### 6. `Tests`
-*   **Purpose:** xUnit unit test suite using Fluent Assertions.
-*   **Coverage:** Comparer ordering, limit level aggregation, order quantity mutations, modify/cancel mappings, linked-list pointer integrity, and full order book lifecycle (add → modify → cancel).
+Flip `MatchingEngineConfiguration.Algorithm` to `Fifo` and that same incoming 300 fills the oldest resting order to completion first, then the next, no proportional split whatsoever.
 
 ---
 
-## Tech Stack
+## Design decisions
 
-| Layer | Technology |
-|---|---|
-| Runtime | .NET 10.0 |
-| Language | C# 13 |
-| Testing | xUnit + Fluent Assertions |
-| Hosting | Microsoft Generic Host |
+The choices that shaped the engine, and why:
+
+- **Prices as `long` cents, not `decimal`/`double`.** No floating-point drift anywhere in the matching path... comparisons and fills are exact integer math.
+- **`OrderbookEntry : Order` *is* the linked-list node.** The order carries its own `Next`/`Previous` pointers, so cancels are O(1) pointer splices with zero wrapper allocations.
+- **`SortedSet<Limit>` + `Dictionary<orderId, entry>`.** O(log n) to reach the best bid/ask price level, O(1) to find or cancel any order by id.
+- **Pro-rata uses largest-remainder allocation.** Fractional lots are distributed deterministically instead of silently dropped, and ties fall back to time priority.
+- **Async logging off the hot path.** Log calls just enqueue onto a thread-safe `BufferBlock`; a background writer drains it to disk and flushes cleanly on shutdown, keeping file I/O out of the execution threads.
+
+---
+
+## Architecture
+
+The solution is split into focused projects so instrument data, order state, book mechanics, and matching never bleed into each other:
+
+```
+TradingEngineServer/ (solution root)
+├── Instruments/          Security reference data (id + ticker) e.g (1, AAPL)
+├── Orders/               Order / limit domain models, comparers, linked-list node
+├── OrderBook/            Per-instrument bid/ask book + tiered interfaces
+├── MatchingEngine/       Multi-book orchestrator + FIFO / pro-rata algorithms
+├── Logging/              Async logger (only text is supported for now in .log files)
+├── UnitTests/            xUnit + FluentAssertions
+└── TradingEngineServer/  DI wiring
+```
+
+**Order book.** Price levels live in a `SortedSet<Limit>` ordered by `BidLimitComparer` (descending) and `AskLimitComparer` (ascending), so the best bid/ask is always `Min`. Every order is additionally indexed in a `Dictionary<long, OrderbookEntry>` for O(1) lookup and cancel.
+
+**Interface tiers.** `IReadonlyOrderBook → IOrderEntryOrderBook → IRetrievalOrderBook → IMatchingOrderBook` widen access one step at a time. A caller takes the narrowest interface it needs: read-only consumers can't mutate, and the fully-mutable book stays internal to the matching path.
+
+**Matching engine.** Holds a dictionary of order books keyed by `SecurityId`, so a single engine serves the whole venue. Algorithms implement `IMatchingAlgorithm` as stateless singletons and are resolved from config via DI: swapping matching algorithms is a one-line settings change in `appsettings.json`
+
+---
+
+## Running it
+
+Requires the **.NET 10 SDK**.
+
+```bash
+dotnet build
+dotnet test          
+dotnet run --project TradingEngineServer/TradingEngineServer.csproj
+```
+
+Pick the matching algorithm in `TradingEngineServer/appsettings.json`:
+
+```json
+"MatchingEngineConfiguration": {
+  "Algorithm": "Fifo"      // or "ProRata"
+}
+```
+
+The host currently wires up the engine, DI, and logging; order intake over REST/WebSocket is on the roadmap, so for now the matching logic is exercised through the test suite.
+
+### Logs
+
+Written to date-stamped folders under `logs/`. Tail the most recent one live in PowerShell:
+
+```powershell
+Get-Content -Path (Get-ChildItem "logs/*/*.log" | Sort-Object LastWriteTime -Descending | Select-Object -First 1) -Wait
+```
+
+---
+
+## Tech stack
+
+| Layer     | Technology                |
+|-----------|---------------------------|
+| Runtime   | .NET 10.0                 |
+| Language  | C# 13                     |
+| Testing   | xUnit + FluentAssertions  |
+| Hosting   | Microsoft Generic Host    |
 
 ---
 
 ## Roadmap
 
-- [x] Domain models (Orders, Limit Levels, Comparers)
-- [x] Order Book structural layer (interfaces, sorted sets, linked lists)
+- [x] Domain models (orders, limit levels, comparers)
+- [x] Order-book structural layer (interfaces, sorted sets, linked lists)
+- [x] Matching engine (FIFO + pro-rata)
 - [x] Unit test suite
-- [ ] Matching engine execution logic (price-time priority fills)
 - [ ] REST gateway (`POST /orders`, `DELETE /orders/{id}`, `GET /book`)
-- [ ] WebSocket/SignalR layer (live book + trade event broadcast)
+- [ ] WebSocket / SignalR layer (live book + trade broadcast)
 - [ ] Browser dashboard (order entry form + live book table)
 - [ ] Cloud deployment (backend on Render, frontend on Vercel)
 
 ---
-
-## How to Run
-
-Ensure you have the **.NET 10 SDK** installed.
-
-### Build
-```bash
-dotnet build
-```
-
-### Run
-```bash
-dotnet run --project TradingEngineServer/TradingEngineServer.csproj
-```
-
-### Test
-```bash
-dotnet test
-```
-
-### View Logs
-Logs are written to date-stamped folders in the root directory. Stream them live in PowerShell:
-```powershell
-Get-Content -Path (Get-ChildItem -Path "2026-*/*.log" | Sort-Object LastWriteTime -Descending | Select-Object -First 1) -Wait
-```

@@ -27,8 +27,6 @@ public class OrderBook : IRetrievalOrderBook
         _instrument = instrument;
     }
     
-    public int Count => _orders.Count;
-
     public bool ContainsOrder(long orderId)
     {
         return _orders.ContainsKey(orderId);
@@ -54,7 +52,7 @@ public class OrderBook : IRetrievalOrderBook
         return new OrderBookSpread(bestBid, bestAsk);
     }
 
-    public int OrderCount { get; }
+    public int Count  => _orders.Count;
 
     public List<OrderbookEntry> GetAskOrders()
     {
