@@ -51,7 +51,7 @@ public class Fifo : IMatchingAlgorithm
         // a buy aggressor lifts the asks; a sell aggressor hits the bids
         SortedSet<Limit> restingLimits = incoming.IsBuySide ? askLimits : bidLimits;
 
-        while (bidLimits.Count > 0 && askLimits.Count > 0)
+        while (incoming.CurrentQuantity > 0 && restingLimits.Count > 0)
         {
             Limit bestLevel = restingLimits.Min!;
 
@@ -63,7 +63,7 @@ public class Fifo : IMatchingAlgorithm
             if (!crosses)
                 break;
 
-            OrderbookEntry? restingEntry = bestLevel.Head; // oldest order at the level (FIFO) 
+            OrderbookEntry restingEntry = bestLevel.Head!; // oldest order at the level (FIFO) 
 
             uint tradeQuantity = Math.Min(incoming.CurrentQuantity, restingEntry.CurrentQuantity);
             long executionPrice = bestLevel.Price; // resting order now sets the price

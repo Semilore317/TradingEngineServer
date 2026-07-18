@@ -106,79 +106,6 @@ public class ProRata : IMatchingAlgorithm
             limitLevels.Remove(parentLimit);
     }
 
-    public static uint LevelQuantity(Limit limit)
-    {
-        uint total = 0;
-        OrderbookEntry? current = limit.Head;
-        while (current != null)
-        {
-            total += current.CurrentQuantity;
-            current = current.Next;
-        }
-
-        return total;
-    }
-
-    public static void MatchLevel(
-        Limit aggressorLimit,
-        Limit passiveLimit,
-        uint totalAggressorQuantity,
-        long executionprice,
-        List<Fill> fills,
-        Dictionary<long, OrderbookEntry> orders,
-        SortedSet<Limit> aggressorLimits,
-        SortedSet<Limit> passiveLimits,
-        bool bidIsAggressor
-    )
-    {
-        List<(OrderbookEntry Entry, uint Allocated)> allocations = AllocateProRata(passiveLimit, totalAggressorQuantity);
-        
-        OrderbookEntry? aggressorEntry = aggressorLimit.Head;
-        uint aggressorRemaining = totalAggressorQuantity;
-
-        foreach (var allocation in allocations)
-        {
-            OrderbookEntry passiveEntry = allocation.Entry;
-            uint passiveRemainingToFill = allocation.Allocated;
-
-            while (aggressorEntry != null && passiveRemainingToFill > 0)
-            {
-                uint tradeQuantity = Math.Min(aggressorEntry.CurrentQuantity, passiveRemainingToFill);
-                
-                OrderbookEntry bidEntry = bidIsAggressor ? aggressorEntry : passiveEntry;
-                OrderbookEntry askEntry = bidIsAggressor ? passiveEntry : aggressorEntry;
-                
-                bidEntry.DecrementQuantity(tradeQuantity);
-                askEntry.DecrementQuantity(tradeQuantity);
-                
-                fills.Add(new Fill
-                {
-                    SecurityId = bidEntry.SecurityId,
-                    BidOrderId = bidEntry.OrderId,
-                    AskOrderId = askEntry.OrderId,
-                    ExecutionPrice = executionprice,
-                    FilledAt = DateTime.UtcNow,
-                    FilledQuantity = tradeQuantity
-                });
-                
-                passiveRemainingToFill -= tradeQuantity;
-                aggressorRemaining -= tradeQuantity;
-
-                OrderbookEntry? nextAggressor = aggressorEntry.Next;
-                if (aggressorEntry.CurrentQuantity == 0)
-                {
-                    RemoveFilledOrder(aggressorEntry, aggressorLimits, orders);
-                    aggressorEntry = nextAggressor;
-                }
-            }
-
-            if (passiveEntry.CurrentQuantity == 0)
-            {
-                RemoveFilledOrder(passiveEntry, passiveLimits, orders);
-            }
-        }
-    }
-
     public MatchResult MatchIncoming(
         Order incoming,
         SortedSet<Limit> bidLimits,
@@ -219,7 +146,7 @@ public class ProRata : IMatchingAlgorithm
                 fills.Add(new Fill
                 {
                     SecurityId = incoming.SecurityId,
-                    BidOrderId = incoming.IsBuySide ? incoming.OrderId : restingEntry.Price,
+                    BidOrderId = incoming.IsBuySide ? incoming.OrderId : restingEntry.OrderId,
                     AskOrderId = incoming.IsBuySide ? restingEntry.OrderId : incoming.OrderId,
                     ExecutionPrice = executionPrice,
                     FilledQuantity = tradeQuantity,

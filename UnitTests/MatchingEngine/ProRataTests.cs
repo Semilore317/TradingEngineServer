@@ -68,13 +68,14 @@ public class ProRataTests
         var bidLimits = new SortedSet<Limit>(BidComparer);
         var askLimits = new SortedSet<Limit>(AskComparer);
 
-        bidLimits.Add(BuildLevel(99, Side.Buy, orders, (1, 100u)));
         askLimits.Add(BuildLevel(100, Side.Sell, orders, (2, 100u)));
 
-        var result = ProRata.Instance.Match(bidLimits, askLimits, orders);
+        var incoming = new Order(1,1 , "Belvedere", Side.Buy, 99, 100u);
+        
+        var result = ProRata.Instance.MatchIncoming(incoming,bidLimits, askLimits, orders);
 
         result.Fills.Should().BeEmpty();
-        orders.Count.Should().Be(2);
+        orders.Count.Should().Be(1);
     }
 
     [Fact]
@@ -85,12 +86,11 @@ public class ProRataTests
         var askLimits = new SortedSet<Limit>(AskComparer);
 
         // aggressor --> 300 QTY
-        bidLimits.Add(BuildLevel(100, Side.Buy, orders, (1, 300u)));
-        
+        var incomingBid = new Order(1, 1, "Jump Trading", Side.Buy, 100, 300u);
         // passive/resting: 600 total QTY splits across 3 orders
         askLimits.Add(BuildLevel(100, Side.Sell, orders, (2, 100u), (3, 200u), (4, 300u)));
 
-        var result = ProRata.Instance.Match(bidLimits, askLimits, orders);
+        var result = ProRata.Instance.MatchIncoming(incomingBid, bidLimits, askLimits, orders);
 
         // The 300 incoming should split proportionally: 50, 100, 150
         result.Fills.Count.Should().Be(3);
@@ -107,5 +107,24 @@ public class ProRataTests
         orders[2].CurrentQuantity.Should().Be(50u);
         orders[3].CurrentQuantity.Should().Be(100u);
         orders[4].CurrentQuantity.Should().Be(150u);
+    }
+
+    [Fact]
+    public static void IncomingBuy_SplitsAcrossRestingAsksBySize()
+    {
+        var orders = new Dictionary<long, OrderbookEntry>();
+        var bidLimits = new SortedSet<Limit>(BidComparer);
+        var askLimits = new SortedSet<Limit>(AskComparer);
+        
+        askLimits.Add(BuildLevel(100, Side.Sell, orders, (2, 100u), (3, 200u), (4, 300u)));
+
+        var incoming = new Order(1,1, "HRT", Side.Buy, 100, 300u);
+        
+        var result = ProRata.Instance.MatchIncoming(incoming, bidLimits, askLimits, orders);
+        
+        result.Fills.Single(f => f.AskOrderId == 2).FilledQuantity.Should().Be(50u);
+        result.Fills.Single(f => f.AskOrderId == 3).FilledQuantity.Should().Be(100u);
+        result.Fills.Single(f => f.AskOrderId == 4).FilledQuantity.Should().Be(150u);
+        incoming.CurrentQuantity.Should().Be(0u);
     }
 }
