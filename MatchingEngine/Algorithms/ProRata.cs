@@ -117,7 +117,7 @@ public class ProRata : IMatchingAlgorithm
         
         SortedSet<Limit> restingLimits = incoming.IsBuySide ?  askLimits : bidLimits;
 
-        while (bidLimits.Count > 0 && askLimits.Count > 0)
+        while (incoming.CurrentQuantity > 0 &&  restingLimits.Count > 0)
         {
             Limit bestLevel = restingLimits.Min!;
             

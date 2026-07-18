@@ -27,12 +27,14 @@ public class MatchingEngine: IMatchingEngine
         long id = order.SecurityId;
         if (!_orderBooks.TryGetValue(id, out EngineOrderBook? book))
             throw new InvalidOperationException($"No orderbook registered for SecurityId {order.SecurityId}");
+       
+        MatchResult result = _algorithm.MatchIncoming(order, book.BidLimits, book.AskLimits, book.Orders);
         
         // .. then rest whatever's left as a passive order
         if(order.CurrentQuantity > 0)
             book.AddOrder(order);
 
-        return _algorithm.MatchIncoming(order, book.BidLimits, book.AskLimits, book.Orders);
+        return result;
     }
 
     public MatchResult ChangeOrders(ModifyOrder modifyOrder)
@@ -45,10 +47,12 @@ public class MatchingEngine: IMatchingEngine
         book.RemoveOrder(modifyOrder.ToCancelOrder());
         Order incoming = modifyOrder.ToNewOrder();
         
+        MatchResult result = _algorithm.MatchIncoming(incoming, book.BidLimits, book.AskLimits, book.Orders);
+        
         if(incoming.CurrentQuantity > 0)
             book.AddOrder(incoming);
-        
-        return _algorithm.MatchIncoming(incoming, book.BidLimits, book.AskLimits, book.Orders); 
+
+        return result;
     }
 
     public void RemoveOrder(CancelOrder cancelOrder)

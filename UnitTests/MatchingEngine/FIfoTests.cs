@@ -103,17 +103,16 @@ public class FIfoTests
         var bidLimits = new SortedSet<Limit>(BidComparer);
         var askLimits = new SortedSet<Limit>(AskComparer);
         
-        bidLimits.Add(BuildLevel(101, Side.Sell, orders, (2, 100u)));
-        
-        var incoming = new Order(2, 1, "JP Morgan", Side.Buy, 100, 100u);
+        bidLimits.Add(BuildLevel(101, Side.Sell, orders, (1, 100u)));
+        var incoming = new Order(2, 1, "JP Morgan", Side.Sell, 100, 100u);
         
         var result = ProRata.Instance.MatchIncoming(incoming, bidLimits, askLimits, orders);
 
         result.Fills.Count.Should().Be(1);
         var fill = result.Fills[0];
-        fill.BidOrderId.Should().Be(1);
-        fill.AskOrderId.Should().Be(2);
-        fill.ExecutionPrice.Should().Be(101);
+        fill.BidOrderId.Should().Be(1);         // resting buyer
+        fill.AskOrderId.Should().Be(2);         // incoming seller
+        fill.ExecutionPrice.Should().Be(101);   // resting price wins!!!
         fill.FilledQuantity.Should().Be(100);
 
     }
