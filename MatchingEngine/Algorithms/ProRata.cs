@@ -1,4 +1,3 @@
-using System.Runtime.InteropServices;
 using TradingEngineServer.Orders;
 
 namespace TradingEngineServer.MatchingEngine.Algorithms;
@@ -180,33 +179,57 @@ public class ProRata : IMatchingAlgorithm
         }
     }
 
-    public MatchResult Match(
+    public MatchResult MatchIncoming(
+        Order incoming,
         SortedSet<Limit> bidLimits,
         SortedSet<Limit> askLimits,
         Dictionary<long, OrderbookEntry> orders
     )
     {
         List<Fill> fills = new List<Fill>();
+        
+        SortedSet<Limit> restingLimits = incoming.IsBuySide ?  askLimits : bidLimits;
 
         while (bidLimits.Count > 0 && askLimits.Count > 0)
         {
-            Limit bestBid = bidLimits.Min!;
-            Limit bestAsk = askLimits.Min!;
+            Limit bestLevel = restingLimits.Min!;
+            
+            bool crosses = incoming.IsBuySide
+                ? incoming.Price  >= bestLevel.Price
+                : incoming.Price <=  bestLevel.Price;
 
-            if (bestBid.Price < bestAsk.Price)
+            if (!crosses)
                 break;
+            
+            long executionPrice = bestLevel.Price;
+            
+            // allocate the incoming quantity across this level's resting order, by size
+            List<(OrderbookEntry Entry, uint Allocated)> allocations =
+                AllocateProRata(bestLevel, incoming.CurrentQuantity);
 
-            uint bidLevelQuantity = LevelQuantity(bestBid);
-            uint askLevelQuantity = LevelQuantity(bestAsk);
-            
-            long executionPrice = (bestBid.Price >= bestAsk.Price) ? bestAsk.Price : bestBid.Price;
-            
-            if(bidLevelQuantity <= askLevelQuantity)
-                MatchLevel(bestBid, bestAsk, bidLevelQuantity, executionPrice, fills, orders, bidLimits, askLimits, true);
-            else
-                MatchLevel(bestAsk, bestBid, askLevelQuantity, executionPrice, fills, orders, askLimits, bidLimits, false);
+            foreach (var (restingEntry, allocated) in allocations)
+            {
+                uint tradeQuantity = Math.Min(allocated, incoming.CurrentQuantity);
+                if(tradeQuantity == 0)
+                    continue;
+                
+                incoming.DecrementQuantity(tradeQuantity);
+                restingEntry.DecrementQuantity(tradeQuantity);
+                
+                fills.Add(new Fill
+                {
+                    SecurityId = incoming.SecurityId,
+                    BidOrderId = incoming.IsBuySide ? incoming.OrderId : restingEntry.Price,
+                    AskOrderId = incoming.IsBuySide ? restingEntry.OrderId : incoming.OrderId,
+                    ExecutionPrice = executionPrice,
+                    FilledQuantity = tradeQuantity,
+                    FilledAt = DateTime.UtcNow
+                });
+                
+                if(restingEntry.CurrentQuantity == 0)
+                    RemoveFilledOrder(restingEntry,  restingLimits, orders);
+            }
         }
-
         return new MatchResult(fills);
     }
 }
