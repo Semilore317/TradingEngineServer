@@ -52,7 +52,7 @@ public class OrderBook : IRetrievalOrderBook
         return new OrderBookSpread(bestBid, bestAsk);
     }
 
-    public int OrderCount  => _orders.Count;
+    public int Count  => _orders.Count;
 
     public List<OrderbookEntry> GetAskOrders()
     {
