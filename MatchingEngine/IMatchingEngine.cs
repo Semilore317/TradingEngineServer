@@ -1,7 +1,7 @@
 ﻿using Instruments;
-using TradingEngineServer.Orders;
+using Valkyrie.Orders;
 
-namespace TradingEngineServer.MatchingEngine;
+namespace Valkyrie.MatchingEngine;
 
 public interface IMatchingEngine
 {

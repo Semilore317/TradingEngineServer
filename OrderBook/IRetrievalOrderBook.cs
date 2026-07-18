@@ -1,6 +1,6 @@
-using TradingEngineServer.Orders;
+using Valkyrie.Orders;
 
-namespace TradingEngineServer.OrderBook;
+namespace Valkyrie.OrderBook;
 // <summary>
 // Retrieval interface of the orderbook.
 // Allows retrieving the full lists of active bid and ask orders.

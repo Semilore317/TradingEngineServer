@@ -5,7 +5,7 @@
         <TargetFramework>net10.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
-        <RootNamespace>TradingEngineServer.Logging</RootNamespace>
+        <RootNamespace>Valkyrie.Logging</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>

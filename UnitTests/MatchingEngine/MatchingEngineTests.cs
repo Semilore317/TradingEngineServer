@@ -1,8 +1,8 @@
 ﻿using FluentAssertions;
 using Instruments;
-using TradingEngineServer.MatchingEngine.Algorithms;
-using TradingEngineServer.Orders;
-using Engine = TradingEngineServer.MatchingEngine.MatchingEngine;
+using Valkyrie.MatchingEngine.Algorithms;
+using Valkyrie.Orders;
+using Engine = Valkyrie.MatchingEngine.MatchingEngine;
 
 namespace UnitTests.MatchingEngine;
 

@@ -2,11 +2,11 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace TradingEngineServer.Core.Configuration
+namespace Valkyrie.Core.Configuration
 {
-    class TradingEngineServerConfiguration
+    class ValkyrieConfiguration
     {
-    public TradingEngineServerSettings TradingEngineServerSettings { get; set; }
+    public ValkyrieSettings ValkyrieSettings { get; set; }
     }
 
     class TradingServerSettings

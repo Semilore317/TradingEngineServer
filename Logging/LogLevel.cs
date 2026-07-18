@@ -1,4 +1,4 @@
-﻿namespace TradingEngineServer.Logging
+﻿namespace Valkyrie.Logging
 {
     public enum LogLevel 
     {

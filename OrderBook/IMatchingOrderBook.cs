@@ -1,4 +1,4 @@
-namespace TradingEngineServer.OrderBook;
+namespace Valkyrie.OrderBook;
 
 // <summary>
 // Combines retrieval (read) and order entry (write) permissions.

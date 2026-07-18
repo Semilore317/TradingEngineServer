@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace TradingEngineServer.Core
+namespace Valkyrie.Core
 {
-    interface ITradingEngineServer
+    interface IValkyrie
     {
         Task Run(CancellationToken token);
     }

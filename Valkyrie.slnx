@@ -5,6 +5,6 @@
   <Project Path="MatchingEngine/MatchingEngine.csproj" />
   <Project Path="OrderBook/OrderBook.csproj" />
   <Project Path="Orders/Orders.csproj" />
-  <Project Path="TradingEngineServer/TradingEngineServer.csproj" />
   <Project Path="UnitTests/UnitTests.csproj" />
+  <Project Path="Valkyrie/Valkyrie.csproj" />
 </Solution>

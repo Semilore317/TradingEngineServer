@@ -368,3 +368,4 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 .idea/2026-07-*/
+.idea/

@@ -1,6 +1,6 @@
-﻿using TradingEngineServer.Orders;
+﻿using Valkyrie.Orders;
 
-namespace TradingEngineServer.OrderBook;
+namespace Valkyrie.OrderBook;
 
 // write only interface
 public interface IOrderEntryOrderBook: IReadonlyOrderBook

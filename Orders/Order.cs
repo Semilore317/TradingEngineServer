@@ -1,4 +1,4 @@
-namespace TradingEngineServer.Orders;
+namespace Valkyrie.Orders;
 
 public class Order(long orderId, long securityId, string username, Side side, long price, uint initialQuantity) 
     : OrderCore(orderId, securityId, username)

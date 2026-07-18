@@ -1,8 +1,8 @@
 ﻿using System.Threading.Tasks.Dataflow;
 using Microsoft.Extensions.Options;
-using TradingEngineServer.Logging.Configuration;
+using Valkyrie.Logging.Configuration;
 
-namespace TradingEngineServer.Logging;
+namespace Valkyrie.Logging;
 
 public class TextLogger : AbstractLogger, ITextLogger
 {

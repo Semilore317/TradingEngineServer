@@ -1,6 +1,6 @@
 ﻿using FluentAssertions;
-using TradingEngineServer.MatchingEngine.Algorithms;
-using TradingEngineServer.Orders;
+using Valkyrie.MatchingEngine.Algorithms;
+using Valkyrie.Orders;
 
 namespace UnitTests.MatchingEngine;
 

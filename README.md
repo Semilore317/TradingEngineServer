@@ -1,4 +1,4 @@
-# TradingEngineServer
+# Valkyrie-dotnet 
 
 A limit order book and matching engine written from scratch in C# on **.NET 10**. FIFO and pro-rata matching, strict price-time priority, and an async logging pipeline. 
 There are no exchange libraries: the book, the matching loop, and the allocation math are all custom.
@@ -51,14 +51,14 @@ The choices that shaped the engine, and why:
 The solution is split into focused projects so instrument data, order state, book mechanics, and matching never bleed into each other:
 
 ```
-TradingEngineServer/ (solution root)
+Valkyrie/ (solution root)
 ├── Instruments/          Security reference data (id + ticker) e.g (1, AAPL)
 ├── Orders/               Order / limit domain models, comparers, linked-list node
 ├── OrderBook/            Per-instrument bid/ask book + tiered interfaces
 ├── MatchingEngine/       Multi-book orchestrator + FIFO / pro-rata algorithms
 ├── Logging/              Async logger (only text is supported for now in .log files)
 ├── UnitTests/            xUnit + FluentAssertions
-└── TradingEngineServer/  DI wiring
+└── Valkyrie/  DI wiring
 ```
 
 **Order book.** Price levels live in a `SortedSet<Limit>` ordered by `BidLimitComparer` (descending) and `AskLimitComparer` (ascending), so the best bid/ask is always `Min`. Every order is additionally indexed in a `Dictionary<long, OrderbookEntry>` for O(1) lookup and cancel.
@@ -76,10 +76,10 @@ Requires the **.NET 10 SDK**.
 ```bash
 dotnet build
 dotnet test          
-dotnet run --project TradingEngineServer/TradingEngineServer.csproj
+dotnet run --project Valkyrie/Valkyrie.csproj
 ```
 
-Pick the matching algorithm in `TradingEngineServer/appsettings.json`:
+Pick the matching algorithm in `Valkyrie/appsettings.json`:
 
 ```json
 "MatchingEngineConfiguration": {

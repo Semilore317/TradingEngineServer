@@ -4,23 +4,23 @@ using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Text;
-using TradingEngineServer.Core.Configuration;
-using TradingEngineServer.Logging;
+using Valkyrie.Core.Configuration;
+using Valkyrie.Logging;
 
-namespace TradingEngineServer.Core
+namespace Valkyrie.Core
 {
-    sealed class TradingEngineServer : BackgroundService, ITradingEngineServer
+    sealed class Valkyrie : BackgroundService, IValkyrie
     {
         private readonly ITextLogger _logger;
-        private readonly TradingEngineServerConfiguration _tradingEngineServerconfig;
+        private readonly ValkyrieConfiguration _config;
 
-        public TradingEngineServer(
+        public Valkyrie(
             ITextLogger textLogger,
-            IOptions<TradingEngineServerConfiguration> config
+            IOptions<ValkyrieConfiguration> config
         )
         {
             _logger = textLogger ?? throw new ArgumentNullException(nameof(textLogger));
-            _tradingEngineServerconfig = config.Value ?? throw new ArgumentNullException(nameof(config));
+            _config = config.Value ?? throw new ArgumentNullException(nameof(config));
         }
 
         public Task Run(CancellationToken token)
@@ -32,7 +32,7 @@ namespace TradingEngineServer.Core
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            _logger.Info("TradingEngineServer.Core", "Trading Engine Server Started");
+            _logger.Info("Valkyrie.Core", "Trading Engine Server Started");
             // the server technically doesn't need a loop, but it is here to keep the service running
             while (!stoppingToken.IsCancellationRequested)
             {
@@ -46,7 +46,7 @@ namespace TradingEngineServer.Core
                 }
             }
 
-            _logger.Info("TradingEngineServer.Core", "Trading Engine Server Stopped");
+            _logger.Info("Valkyrie.Core", "Trading Engine Server Stopped");
         }
     }
 }

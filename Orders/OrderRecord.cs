@@ -1,4 +1,4 @@
-﻿namespace TradingEngineServer.Orders;
+﻿namespace Valkyrie.Orders;
 /// <summary>
 /// /// Represents a single order in the matching engine's internal book state.
 /// Market data granularity, for reference:

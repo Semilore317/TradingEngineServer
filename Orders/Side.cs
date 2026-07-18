@@ -1,4 +1,4 @@
-﻿namespace TradingEngineServer.Orders;
+﻿namespace Valkyrie.Orders;
 
 public enum Side: byte
 {
