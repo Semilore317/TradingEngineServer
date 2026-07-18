@@ -16,7 +16,7 @@ public class Limit
         Price = price;
     }
     
-    public long Price { get; set; }
+    public long Price { get; }
     public OrderbookEntry? Head { get; set; }
     public OrderbookEntry? Tail { get; set; }
 
