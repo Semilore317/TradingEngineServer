@@ -1,4 +1,4 @@
-﻿namespace TradingEngineServer.OrderBook;
+﻿namespace Valkyrie.OrderBook;
 
 public interface IReadonlyOrderBook
 {

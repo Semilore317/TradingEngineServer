@@ -4,10 +4,10 @@ using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Text;
-using TradingEngineServer.Core.Configuration;
-using TradingEngineServer.Logging;
+using Valkyrie.Core.Configuration;
+using Valkyrie.Logging;
 
-namespace TradingEngineServer.Core
+namespace Valkyrie.Core
 {
     sealed class TradingEngineServer : BackgroundService, ITradingEngineServer
     {
@@ -32,7 +32,7 @@ namespace TradingEngineServer.Core
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            _logger.Info("TradingEngineServer.Core", "Trading Engine Server Started");
+            _logger.Info("Valkyrie.Core", "Trading Engine Server Started");
             // the server technically doesn't need a loop, but it is here to keep the service running
             while (!stoppingToken.IsCancellationRequested)
             {
@@ -46,7 +46,7 @@ namespace TradingEngineServer.Core
                 }
             }
 
-            _logger.Info("TradingEngineServer.Core", "Trading Engine Server Stopped");
+            _logger.Info("Valkyrie.Core", "Trading Engine Server Stopped");
         }
     }
 }

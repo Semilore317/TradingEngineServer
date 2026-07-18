@@ -1,6 +1,6 @@
-using TradingEngineServer.Orders;
+using Valkyrie.Orders;
 
-namespace TradingEngineServer.MatchingEngine.Algorithms;
+namespace Valkyrie.MatchingEngine.Algorithms;
 
 /// <summary>
 /// Pro-Rata Matching Algorithm

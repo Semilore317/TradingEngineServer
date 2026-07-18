@@ -1,6 +1,6 @@
-﻿using TradingEngineServer.Orders;
+﻿using Valkyrie.Orders;
 
-namespace TradingEngineServer.MatchingEngine.Algorithms;
+namespace Valkyrie.MatchingEngine.Algorithms;
 
 /// <summary>
 /// Matches an incoming aggressor order against the resting book and returns the fills

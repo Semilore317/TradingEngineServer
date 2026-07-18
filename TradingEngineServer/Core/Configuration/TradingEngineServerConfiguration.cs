@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace TradingEngineServer.Core.Configuration
+namespace Valkyrie.Core.Configuration
 {
     class TradingEngineServerConfiguration
     {

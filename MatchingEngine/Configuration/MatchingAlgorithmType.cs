@@ -1,4 +1,4 @@
-﻿namespace TradingEngineServer.MatchingEngine.Configuration;
+﻿namespace Valkyrie.MatchingEngine.Configuration;
 
 public enum MatchingAlgorithmType
 {

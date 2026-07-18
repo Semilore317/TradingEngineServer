@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace TradingEngineServer.Core
+namespace Valkyrie.Core
 {
     public static class TradingEngineServerServiceProvider
     {

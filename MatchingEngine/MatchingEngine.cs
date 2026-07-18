@@ -1,9 +1,9 @@
 using Instruments;
-using TradingEngineServer.MatchingEngine.Algorithms;
-using TradingEngineServer.Orders;
+using Valkyrie.MatchingEngine.Algorithms;
+using Valkyrie.Orders;
 
-using EngineOrderBook = TradingEngineServer.OrderBook.OrderBook;
-namespace TradingEngineServer.MatchingEngine;
+using EngineOrderBook = Valkyrie.OrderBook.OrderBook;
+namespace Valkyrie.MatchingEngine;
 public class MatchingEngine: IMatchingEngine
 {
     private readonly IMatchingAlgorithm _algorithm;

@@ -1,4 +1,4 @@
-﻿namespace TradingEngineServer.Logging.Configuration;
+﻿namespace Valkyrie.Logging.Configuration;
 
 public class LoggingConfiguration
 {

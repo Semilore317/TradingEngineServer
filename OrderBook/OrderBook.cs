@@ -1,10 +1,10 @@
 using System.Runtime.CompilerServices;
 using Instruments;
-using TradingEngineServer.Orders;
+using Valkyrie.Orders;
 
 // grants private fields access without compromising encapsulation
 [assembly: InternalsVisibleTo("MatchingEngine")] 
-namespace TradingEngineServer.OrderBook;
+namespace Valkyrie.OrderBook;
 
 public class OrderBook : IRetrievalOrderBook
 {

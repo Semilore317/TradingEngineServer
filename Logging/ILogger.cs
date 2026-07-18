@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics;
 
-namespace TradingEngineServer.Logging;
+namespace Valkyrie.Logging;
 
 public interface ILogger
 {

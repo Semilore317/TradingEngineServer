@@ -1,4 +1,4 @@
-﻿namespace TradingEngineServer.Orders;
+﻿namespace Valkyrie.Orders;
 
 /// <summary>
 /// due to the nature of the way we're presenting the bids and asks

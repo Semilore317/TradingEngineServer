@@ -2,15 +2,15 @@ using System.Threading.Channels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
-using TradingEngineServer.Core.Configuration;
-using TradingEngineServer.Logging;
-using TradingEngineServer.Logging.Configuration;
-using TradingEngineServer.MatchingEngine;
-using TradingEngineServer.MatchingEngine.Algorithms;
-using TradingEngineServer.MatchingEngine.Configuration;
-using MatchingEngineSingleton = TradingEngineServer.MatchingEngine.MatchingEngine;
+using Valkyrie.Core.Configuration;
+using Valkyrie.Logging;
+using Valkyrie.Logging.Configuration;
+using Valkyrie.MatchingEngine;
+using Valkyrie.MatchingEngine.Algorithms;
+using Valkyrie.MatchingEngine.Configuration;
+using MatchingEngineSingleton = Valkyrie.MatchingEngine.MatchingEngine;
 
-namespace TradingEngineServer.Core;
+namespace Valkyrie.Core;
 
 /// <summary>
 /// stands up the application, it wires:

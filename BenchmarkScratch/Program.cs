@@ -1,8 +1,8 @@
 using System.Diagnostics;
 using Instruments;
-using TradingEngineServer.MatchingEngine;
-using TradingEngineServer.MatchingEngine.Algorithms;
-using TradingEngineServer.Orders;
+using Valkyrie.MatchingEngine;
+using Valkyrie.MatchingEngine.Algorithms;
+using Valkyrie.Orders;
 
 var security = new Security(1, "MSFT");
 var engine = new MatchingEngine(Fifo.Instance);

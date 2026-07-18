@@ -1,6 +1,6 @@
 using Instruments;
-using TradingEngineServer.OrderBook;
-using TradingEngineServer.Orders;
+using Valkyrie.OrderBook;
+using Valkyrie.Orders;
 using FluentAssertions;
 
 namespace UnitTests;

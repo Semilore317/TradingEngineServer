@@ -1,4 +1,4 @@
-﻿namespace TradingEngineServer.Core.Configuration
+﻿namespace Valkyrie.Core.Configuration
 {
     public class TradingEngineServerSettings
     {
