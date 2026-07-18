@@ -6,8 +6,8 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <LangVersion>latest</LangVersion>
-        <RootNamespace>TradingEngineServer</RootNamespace>
-        <AssemblyName>TradingEngineServer</AssemblyName>
+        <RootNamespace>Valkyrie</RootNamespace>
+        <PackageId>Valkyrie</PackageId>
     </PropertyGroup>
 
     <ItemGroup>

@@ -5,7 +5,7 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
 
-        <RootNamespace>TradingEngineServer.Instrument</RootNamespace>
-        <AssemblyName>TradingEngineServer.Instrument</AssemblyName>
+        <RootNamespace>Valkyrie.Instrument</RootNamespace>
+        <AssemblyName>Valkyrie.Instrument</AssemblyName>
     </PropertyGroup>
 </Project>
