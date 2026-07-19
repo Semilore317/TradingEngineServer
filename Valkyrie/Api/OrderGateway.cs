@@ -29,7 +29,7 @@ public sealed class OrderGateway(IMatchingEngine engine)
             engine.RemoveOrder(new CancelOrder(id, securityId, username));
     }
 
-    public bool TryGetBook(long securityId, out OrderBookSnapshot book)
+    public bool TryGetBook(long securityId, out OrderBookSnapshot? book)
     {
         lock (_gate)
             return engine.TryGetSnapshot(securityId, out book);
