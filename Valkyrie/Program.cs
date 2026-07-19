@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
+using Valkyrie.Api;
 using Valkyrie.Core;
 using Valkyrie.Core.Configuration;
 using Valkyrie.Logging;
@@ -47,6 +48,7 @@ ValkyrieServiceProvider.ServiceProvider = engine.Services;
     });
 
     builder.Services.AddSingleton<IMatchingEngine, MatchingEngine>();
+    builder.Services.AddSingleton<OrderGateway>();
     builder.Services.AddHostedService<Valkyrie.Core.Valkyrie>(); // the background service... it still runs
 
     
