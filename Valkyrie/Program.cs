@@ -1,9 +1,11 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Instruments;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using Valkyrie.Api;
 using Valkyrie.Core;
 using Valkyrie.Core.Configuration;
+using Valkyrie.Instrument.Configuration;
 using Valkyrie.Logging;
 using Valkyrie.Logging.Configuration;
 using Valkyrie.MatchingEngine;
@@ -11,9 +13,9 @@ using Valkyrie.MatchingEngine.Algorithms;
 using Valkyrie.MatchingEngine.Configuration;
 using static System.AppContext;
 
-using var engine = ValkyrieHostBuilder.BuildValkyrie();
+using var Engine = ValkyrieHostBuilder.BuildValkyrie();
 
-ValkyrieServiceProvider.ServiceProvider = engine.Services;
+ValkyrieServiceProvider.ServiceProvider = Engine.Services;
 
 {
     var builder = WebApplication.CreateBuilder(
@@ -54,5 +56,16 @@ ValkyrieServiceProvider.ServiceProvider = engine.Services;
     
     var app = builder.Build();
     app.MapOrderEndpoints();
+
+    var engine = app.Services.GetRequiredService<IMatchingEngine>();
+
+    var instruments = new List<InstrumentConfiguration>();
+    app.Configuration.GetSection(nameof(InstrumentConfiguration)).Bind(instruments);
+
+    foreach (var instrument in instruments)
+    {
+        engine.AddOrderBook(new Security(instrument.SecurityId, instrument.Symbol));
+    }
+    
     await app.RunAsync();
 }
