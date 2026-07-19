@@ -2,7 +2,8 @@
 
 namespace Valkyrie.Api.Dto;
 
-public record PlaceOrderRequest(
+public record ModifyOrderRequest(
+    long OrderId,
     long SecurityId,
     string Username,
     Side Side,

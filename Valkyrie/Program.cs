@@ -53,5 +53,6 @@ ValkyrieServiceProvider.ServiceProvider = engine.Services;
 
     
     var app = builder.Build();
+    app.MapOrderEndpoints();
     await app.RunAsync();
 }

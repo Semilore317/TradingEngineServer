@@ -12,12 +12,13 @@ public sealed class OrderGateway(IMatchingEngine engine)
     private readonly object _gate = new();
     private long _nextOrderId;
 
-    public OrderAck Submit(PlaceOrderRequest r)
+    public OrderAck Submit(PlaceOrderRequest request)
     {
         lock (_gate)                                // one writer at a time
         {
-            var id = ++_nextOrderId;           // server assigns the id
-            var order = new Order(id, r.SecurityId, r.Username, r.Side, r.Price, r.Quantity);
+            // server assigns the id for now.... since it's locked it's not a major concern for now
+            var id = ++_nextOrderId;          
+            var order = new Order(id, request.SecurityId, request.Username, request.Side, request.Price, request.Quantity);
             var result = engine.AddOrder(order);
             return OrderAck.From(id, result);
         }
@@ -33,5 +34,17 @@ public sealed class OrderGateway(IMatchingEngine engine)
     {
         lock (_gate)
             return engine.TryGetSnapshot(securityId, out book);
+    }
+
+    public OrderAck Modify(ModifyOrderRequest request)
+    {
+        lock (_gate)
+        {
+            var id = ++_nextOrderId;
+            var modifyOrder = new ModifyOrder(id, request.SecurityId, request.Username, request.Side, request.Price,
+                request.Quantity);
+            var result = engine.ChangeOrders(modifyOrder);
+            return OrderAck.From(id, result);
+        }
     }
 }
