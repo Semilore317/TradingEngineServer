@@ -9,7 +9,7 @@ namespace Valkyrie.Api.MarketData;
 /// this approach allows each connection to hold it's own an in-memory queue
 /// publishers only enqueue (non-blocking and thread-safe) while writers use SendAsync
 /// </summary>
-public sealed class MarketDataConnections(WebSocket socket)
+public sealed class MarketDataConnection(WebSocket socket)
 {
     private readonly Channel<byte[]> _outbound = Channel.CreateBounded<byte[]>(
         new BoundedChannelOptions(256)

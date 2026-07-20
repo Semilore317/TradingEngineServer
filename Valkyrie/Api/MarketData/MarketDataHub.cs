@@ -5,25 +5,25 @@ namespace Valkyrie.Api.MarketData;
 public class MarketDataHub
 {
     // securityId ==> (connectionID ==> connection)
-    private readonly ConcurrentDictionary<long, ConcurrentDictionary<string, MarketDataConnections>>
+    private readonly ConcurrentDictionary<long, ConcurrentDictionary<string, MarketDataConnection>>
         _bySecurity = new();
 
-    public void Subscribe(MarketDataConnections connection, long securityId)
+    public void Subscribe(MarketDataConnection connection, long securityId)
     {
-        _bySecurity.GetOrAdd(securityId, _ => new ConcurrentDictionary<string, MarketDataConnections>())
+        _bySecurity.GetOrAdd(securityId, _ => new ConcurrentDictionary<string, MarketDataConnection>())
             .TryAdd(connection.Id, connection);
     }
 
-    public void Unsubscribe(MarketDataConnections connection, long securityId)
+    public void Unsubscribe(MarketDataConnection connection, long securityId)
     {
         if(_bySecurity.TryGetValue(securityId, out var set))
             set.TryRemove(connection.Id, out _);
     }
 
-    public void RemoveEveryWhere(MarketDataConnections connections) // on disconnect
+    public void RemoveEveryWhere(MarketDataConnection connection) // on disconnect
     {
         foreach (var set in _bySecurity.Values)
-            set.TryRemove(connections.Id, out _);
+            set.TryRemove(connection.Id, out _);
     }
     
     public void BroadCast(long securityId, byte[] message)

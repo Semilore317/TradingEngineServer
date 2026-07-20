@@ -49,12 +49,13 @@ using static System.AppContext;
 
     builder.Services.AddSingleton<IMatchingEngine, MatchingEngine>();
     builder.Services.AddSingleton<OrderGateway>();
-    builder.Services.AddSingleton<IMarketDataPublisher, NoOpMarketDataPublisher>(); //TODO: Replace later
     builder.Services.AddHostedService<Valkyrie.Core.Valkyrie>(); // the background service... it still runs
     // this makes sure that i don't have to add actual enum values like side -> 2... much more intuitive from the json
     builder.Services.ConfigureHttpJsonOptions(
         o => o.SerializerOptions.Converters.Add(new JsonStringEnumConverter()));
-        
+    builder.Services.AddSingleton<MarketDataHub>();
+    builder.Services.AddSingleton<IMarketDataPublisher, WebSocketMarketDataPublisher>();
+    
     var app = builder.Build();
     app.MapOrderEndpoints();
 
