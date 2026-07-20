@@ -28,26 +28,23 @@ public static class OrderEndpoints
         );
 
         app.MapGet("/book/{securityId:long}", (long securityId, OrderGateway gateway) =>
-        
             gateway.TryGetBook(securityId, out var book)
                 ? Results.Ok(book)
                 : Results.NotFound()
         );
 
-        app.MapPut("orders/{id:long}", (long id, ModifyOrderRequest request, OrderGateway gateway) =>
-        {
-            if(id != request.OrderId)
-                return Results.BadRequest("Order ID Mismatch between payload and route parameter");
-
-            try
+        app.MapPut("/instruments/{securityId:long}/orders/{id:long}",
+            (long id, long securityId, ModifyOrderRequest request, OrderGateway gateway) =>
             {
-                var ack = gateway.Modify(request);
-                return Results.Ok(ack);
-            }
-            catch (InvalidOperationException e)
-            {
-                return Results.NotFound(e.Message);
-            }
-        });
+                try
+                {
+                    var ack = gateway.Modify(id, securityId, request);
+                    return Results.Ok(ack);
+                }
+                catch (InvalidOperationException e)
+                {
+                    return Results.NotFound(e.Message);
+                }
+            });
     }
 }

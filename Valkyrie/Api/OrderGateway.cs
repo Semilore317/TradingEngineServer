@@ -43,4 +43,15 @@ public sealed class OrderGateway(IMatchingEngine engine)
             return OrderAck.From(request.OrderId, result);
         }
     }
+
+    public OrderAck Modify(long id, long securityId, ModifyOrderRequest request)
+    {
+        lock (_gate)
+        {
+            var modifyOrder = new ModifyOrder(
+                id, securityId, request.Username, request.Side,  request.Price, request.Quantity);
+            var result = engine.ChangeOrders(modifyOrder);
+            return OrderAck.From(id, result);
+        }
+    }
 }
