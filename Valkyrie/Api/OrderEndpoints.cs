@@ -19,7 +19,7 @@ public static class OrderEndpoints
             }
         });
 
-        app.MapDelete("/order/{id:long}",
+        app.MapDelete("/orders/{id:long}",
             (long id, long securityId, string username, OrderGateway gateway) =>
             {
                 gateway.Cancel(id, securityId, username);
@@ -34,7 +34,7 @@ public static class OrderEndpoints
                 : Results.NotFound()
         );
 
-        app.MapPut("order/{id:long}", (long id, ModifyOrderRequest request, OrderGateway gateway) =>
+        app.MapPut("orders/{id:long}", (long id, ModifyOrderRequest request, OrderGateway gateway) =>
         {
             if(id != request.OrderId)
                 return Results.BadRequest("Order ID Mismatch between payload and route parameter");
@@ -42,7 +42,7 @@ public static class OrderEndpoints
             try
             {
                 var ack = gateway.Modify(request);
-                return Results.Created($"/orders/{ack.OrderId}", ack);
+                return Results.Ok(ack);
             }
             catch (InvalidOperationException e)
             {

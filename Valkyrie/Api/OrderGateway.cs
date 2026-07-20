@@ -1,8 +1,5 @@
-using Instruments;
 using Valkyrie.Api.Dto;
 using Valkyrie.MatchingEngine;
-using Valkyrie.MatchingEngine.Algorithms;
-using Valkyrie.OrderBook;
 using Valkyrie.Orders;
 
 namespace Valkyrie.Api;
@@ -40,11 +37,10 @@ public sealed class OrderGateway(IMatchingEngine engine)
     {
         lock (_gate)
         {
-            var id = ++_nextOrderId;
-            var modifyOrder = new ModifyOrder(id, request.SecurityId, request.Username, request.Side, request.Price,
+            var modifyOrder = new ModifyOrder(request.OrderId, request.SecurityId, request.Username, request.Side, request.Price,
                 request.Quantity);
             var result = engine.ChangeOrders(modifyOrder);
-            return OrderAck.From(id, result);
+            return OrderAck.From(request.OrderId, result);
         }
     }
 }

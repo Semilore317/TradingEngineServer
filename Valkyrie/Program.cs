@@ -1,9 +1,9 @@
-﻿using Instruments;
+﻿using System.Text.Json.Serialization;
+using Instruments;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using Valkyrie.Api;
-using Valkyrie.Core;
 using Valkyrie.Core.Configuration;
 using Valkyrie.Instrument.Configuration;
 using Valkyrie.Logging;
@@ -13,9 +13,6 @@ using Valkyrie.MatchingEngine.Algorithms;
 using Valkyrie.MatchingEngine.Configuration;
 using static System.AppContext;
 
-using var Engine = ValkyrieHostBuilder.BuildValkyrie();
-
-ValkyrieServiceProvider.ServiceProvider = Engine.Services;
 
 {
     var builder = WebApplication.CreateBuilder(
@@ -52,7 +49,9 @@ ValkyrieServiceProvider.ServiceProvider = Engine.Services;
     builder.Services.AddSingleton<IMatchingEngine, MatchingEngine>();
     builder.Services.AddSingleton<OrderGateway>();
     builder.Services.AddHostedService<Valkyrie.Core.Valkyrie>(); // the background service... it still runs
-
+    // this makes sure that i don't have to add actual enum values like side -> 2... much more intuitive from the json
+    builder.Services.ConfigureHttpJsonOptions(
+        o => o.SerializerOptions.Converters.Add(new JsonStringEnumConverter()));
     
     var app = builder.Build();
     app.MapOrderEndpoints();
@@ -60,7 +59,7 @@ ValkyrieServiceProvider.ServiceProvider = Engine.Services;
     var engine = app.Services.GetRequiredService<IMatchingEngine>();
 
     var instruments = new List<InstrumentConfiguration>();
-    app.Configuration.GetSection(nameof(InstrumentConfiguration)).Bind(instruments);
+    app.Configuration.GetSection(nameof(Instruments)).Bind(instruments);
 
     foreach (var instrument in instruments)
     {
