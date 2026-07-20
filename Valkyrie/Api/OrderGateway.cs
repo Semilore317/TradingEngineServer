@@ -17,7 +17,6 @@ public sealed class OrderGateway(IMatchingEngine engine, IMarketDataPublisher pu
 
     private void Broadcast(MatchResult result, OrderBookSnapshot? snapshot)
     {
-        if (result == null) throw new ArgumentNullException(nameof(result));
         foreach (var fill in result.Fills)
             publisher.PublishTrade(TradeEvent.From(fill));
         

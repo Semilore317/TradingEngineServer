@@ -36,7 +36,11 @@ public static class MarketDataEndpoints
                 {
                     var result = await socket.ReceiveAsync(buffer, context.RequestAborted);
                     if (result.MessageType == WebSocketMessageType.Close)
+                    {
+                        await socket.CloseAsync(
+                            WebSocketCloseStatus.NormalClosure, "closing", context.RequestAborted);
                         break;
+                    }
 
                     var text = Encoding.UTF8.GetString(buffer, 0, result.Count);
                     var message = JsonSerializer.Deserialize<ClientMessage>(text,
@@ -73,12 +77,19 @@ public static class MarketDataEndpoints
             catch (OperationCanceledException) // at some point the client is gonna disappear 
             {
                 /*No_Op*/
-            } 
+            }
             finally
             {
                 hub.RemoveEveryWhere(connection);
                 connection.Complete(); // allow the send loop finish
-                await sending;
+                try
+                {
+                    await sending;
+                }
+                catch (OperationCanceledException)
+                {
+                    /*NO_OP*/
+                }
             }
         });
     }
