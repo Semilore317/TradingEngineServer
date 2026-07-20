@@ -14,7 +14,10 @@ public static class MarketDataEndpoints
             =>
         {
             if (!context.WebSockets.IsWebSocketRequest)
+            {
                 context.Response.StatusCode = 400;
+                return;
+            }
 
             // this waits for the 101 status code so the app starts using ws to communicate with the browser
             using var socket = await context.WebSockets.AcceptWebSocketAsync();
@@ -52,7 +55,7 @@ public static class MarketDataEndpoints
                                 connection.Enqueue(JsonSerializer.SerializeToUtf8Bytes(
                                     new
                                     {
-                                        type = "Book",
+                                        type = "book",
                                         snapshot.SecurityId,
                                         snapshot.Bid,
                                         snapshot.Ask,

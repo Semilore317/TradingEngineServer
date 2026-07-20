@@ -57,7 +57,9 @@ using static System.AppContext;
     builder.Services.AddSingleton<IMarketDataPublisher, WebSocketMarketDataPublisher>();
     
     var app = builder.Build();
+    app.UseWebSockets(); // turns on the 101 middleware
     app.MapOrderEndpoints();
+    app.MapMarketDataEndpoints(); // registers /ws/marketdata
 
     var engine = app.Services.GetRequiredService<IMatchingEngine>();
 
