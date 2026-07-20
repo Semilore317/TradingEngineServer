@@ -21,7 +21,7 @@ public class OrderApiTests
         using var app = NewApp();
         using var client = app.CreateClient();
 
-        var response = await client.PostAsJsonAsync("/api/orders",
+        var response = await client.PostAsJsonAsync("/orders",
             new PlaceOrderRequest(SecurityId: 1, "sam", Side.Sell, Price: 10000, Quantity: 100));
 
         response.StatusCode.Should().Be(HttpStatusCode.Created);
@@ -34,7 +34,7 @@ public class OrderApiTests
         book!.Ask.Should().Be(10000);
         book.Bids.Should().BeEmpty();
 
-        book.Asks.Should().ContainSingle().Which.Should().Be(100);
+        book.Asks.Should().ContainSingle().Which.Quantity.Should().Be(100);
     }
 
     [Fact]
