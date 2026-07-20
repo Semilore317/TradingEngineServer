@@ -45,35 +45,46 @@ public sealed class OrderGateway(IMatchingEngine engine, IMarketDataPublisher pu
 
     public void Cancel(long id, long securityId, string username)
     {
+        OrderBookSnapshot? snapshot;
         lock (_gate)
+        {
             engine.RemoveOrder(new CancelOrder(id, securityId, username));
+            engine.TryGetSnapshot(securityId, out snapshot);
+        }
+        
+        if(snapshot != null)
+            publisher.PublishBook(snapshot);
     }
 
     public bool TryGetBook(long securityId, out OrderBookSnapshot? book)
     {
         lock (_gate)
-            return engine.TryGetSnapshot(securityId, out book);
-    }
-
-    public OrderAck Modify(ModifyOrderRequest request)
-    {
-        lock (_gate)
         {
-            var modifyOrder = new ModifyOrder(request.OrderId, request.SecurityId, request.Username, request.Side, request.Price,
-                request.Quantity);
-            var result = engine.ChangeOrders(modifyOrder);
-            return OrderAck.From(request.OrderId, result);
+            return engine.TryGetSnapshot(securityId, out book);
         }
     }
-
+    
     public OrderAck Modify(long id, long securityId, ModifyOrderRequest request)
     {
+        MatchResult result;
+        OrderBookSnapshot? snapshot;
+
         lock (_gate)
         {
             var modifyOrder = new ModifyOrder(
                 id, securityId, request.Username, request.Side,  request.Price, request.Quantity);
-            var result = engine.ChangeOrders(modifyOrder);
-            return OrderAck.From(id, result);
+            result = engine.ChangeOrders(modifyOrder);
+            engine.TryGetSnapshot(securityId, out snapshot);
         }
+        
+        foreach (var fill in result.Fills)
+            publisher.PublishTrade((TradeEvent.From(fill)));
+        
+        if(snapshot != null)
+            publisher.PublishBook(snapshot);
+        
+        return OrderAck.From(id, result);
     }
+    
+    // TODO: extract the repeating logic in all these methods into a private helper
 }
