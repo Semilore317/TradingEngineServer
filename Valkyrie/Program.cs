@@ -68,3 +68,6 @@ using static System.AppContext;
     
     await app.RunAsync();
 }
+
+
+public partial class Program; // since WebApplicationFactory requires it
