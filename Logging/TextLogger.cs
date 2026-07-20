@@ -14,7 +14,7 @@ public class TextLogger : AbstractLogger, ITextLogger
         // create the directory (if it doesn't exist) and start logging in a file
         
         string dateDirectoryName = DateTime.Now.ToString("yyyy-MM-dd");
-        string targetDirectory = Path.Combine(config.Directory, dateDirectoryName);
+        string targetDirectory = Path.Combine(config.Directory ,dateDirectoryName);
         string logFileName = $"{config.FileName}_{DateTime.Now:HH_mm_ss}.{config.FileExtension.TrimStart('.')}";
         string filePath = Path.Combine(targetDirectory, logFileName);
     
@@ -22,6 +22,7 @@ public class TextLogger : AbstractLogger, ITextLogger
     
         _ = Task.Run(() => logAsync(filePath, _logQueue, _tokenSource.Token));
     }
+
     private static async Task logAsync(string filepath, BufferBlock<LogInfo> logQueue, CancellationToken token)
     {
         // using tells C# to close these when the operations end

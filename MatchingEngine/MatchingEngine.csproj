@@ -8,6 +8,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\Instruments\Instruments.csproj" />
       <ProjectReference Include="..\Logging\Logging.csproj" />
       <ProjectReference Include="..\OrderBook\OrderBook.csproj" />
       <ProjectReference Include="..\Orders\Orders.csproj" />

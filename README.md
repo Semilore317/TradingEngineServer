@@ -1,6 +1,7 @@
-# Valkyrie-dotnet 
+# Valkyrie-dotnet
 
-A limit order book and matching engine written from scratch in C# on **.NET 10**. FIFO and pro-rata matching, strict price-time priority, and an async logging pipeline. 
+A limit order book and matching engine i'm building C# on **.NET 10**. 
+It uses FIFO and pro-rata matching, price-time priority, an async logging pipeline, and a REST API over ASP.NET Core.
 There are no exchange libraries: the book, the matching loop, and the allocation math are all custom.
 
 ---
@@ -9,16 +10,16 @@ There are no exchange libraries: the book, the matching loop, and the allocation
 
 An in-memory trading engine that maintains a live bid/ask book per instrument and matches incoming orders against it. I built it to work through the fundamentals of electronic trading infrastructure: order-book data structures, matching algorithms, and the low-latency-minded design choices that come with them.
 
-Two matching algorithms are present today, selectable from config:
+Two matching algorithms are implemented, selectable from config:
 
 - **FIFO (price-time priority)**: the oldest resting order at a price level fills first.
 - **Pro-rata**: incoming volume is split across resting orders relative to their size.
 
 ---
 
-## Matching in action
+## How Matching Works
 
-**Pro-rata** allocates an incoming order across resting orders by *size*, not arrival time, the same way many futures markets fill:
+**Pro-rata** allocates an incoming order across resting orders by *size*, not arrival time, the same way most futures markets fill:
 
 ```
 Resting asks @ $1.00 :  #2 = 100    #3 = 200    #4 = 300      ==> 600 total
@@ -30,7 +31,7 @@ Fills                :  #2 → 50     #3 → 100    #4 → 150
                         time priority (FIFO)
 ```
 
-Flip `MatchingEngineConfiguration.Algorithm` to `Fifo` and that same incoming 300 fills the oldest resting order to completion first, then the next, no proportional split whatsoever.
+Flipping `MatchingEngineConfiguration.Algorithm` to `Fifo` makes that same incoming 300 fill the oldest resting order to completion first, then the next, without any proportional split.
 
 ---
 
@@ -57,8 +58,8 @@ Valkyrie/ (solution root)
 ├── OrderBook/            Per-instrument bid/ask book + tiered interfaces
 ├── MatchingEngine/       Multi-book orchestrator + FIFO / pro-rata algorithms
 ├── Logging/              Async logger (only text is supported for now in .log files)
-├── UnitTests/            xUnit + FluentAssertions
-└── Valkyrie/  DI wiring
+├── UnitTests/            xUnit + FluentAssertions (+ WebApplicationFactory API tests)
+└── Valkyrie/             DI wiring + REST API host (Api/ = endpoints, gateway, DTOs)
 ```
 
 **Order book.** Price levels live in a `SortedSet<Limit>` ordered by `BidLimitComparer` (descending) and `AskLimitComparer` (ascending), so the best bid/ask is always `Min`. Every order is additionally indexed in a `Dictionary<long, OrderbookEntry>` for O(1) lookup and cancel.
@@ -66,6 +67,8 @@ Valkyrie/ (solution root)
 **Interface tiers.** `IReadonlyOrderBook → IOrderEntryOrderBook → IRetrievalOrderBook → IMatchingOrderBook` widen access one step at a time. A caller takes the narrowest interface it needs: read-only consumers can't mutate, and the fully-mutable book stays internal to the matching path.
 
 **Matching engine.** Holds a dictionary of order books keyed by `SecurityId`, so a single engine serves the whole venue. Algorithms implement `IMatchingAlgorithm` as stateless singletons and are resolved from config via DI: swapping matching algorithms is a one-line settings change in `appsettings.json`
+
+**REST gateway.** The `Valkyrie` host runs on ASP.NET Core (Kestrel) and maps the endpoints below onto the engine. Endpoints don't call the engine directly; they go through `OrderGateway`, which holds one lock around every engine call and assigns order ids. That lock is what keeps concurrent requests from stepping on the book.
 
 ---
 
@@ -87,7 +90,7 @@ Pick the matching algorithm in `Valkyrie/appsettings.json`:
 }
 ```
 
-The host currently wires up the engine, DI, and logging; order intake over REST/WebSocket is on the roadmap, so for now the matching logic is exercised through the test suite.
+This starts the host on `http://localhost:5000`, seeds the instruments listed in `appsettings.json`, and exposes the REST API below. A WebSocket feed and a browser dashboard are still on the roadmap.
 
 ### Logs
 
@@ -99,14 +102,42 @@ Get-Content -Path (Get-ChildItem "logs/*/*.log" | Sort-Object LastWriteTime -Des
 
 ---
 
+## REST API
+
+With the host running, four endpoints are live on `http://localhost:5000`. Prices are **integer cents** and `side` is `"Buy"` or `"Sell"`. Instruments are seeded at startup from `appsettings.json` (`1 = MSFT`, `2 = AAPL`, `3 = SPCX`).
+
+| Method   | Route                                                   | Purpose                                                     |
+|----------|---------------------------------------------------------|-------------------------------------------------------------|
+| `POST`   | `/orders`                                               | Place an order; returns the assigned id and any fills       |
+| `PUT`    | `/instruments/{securityId}/orders/{id}`                 | Modify a resting order (cancel-and-replace)                 |
+| `DELETE` | `/instruments/{securityId}/orders/{id}?username={user}` | Cancel a resting order                                       |
+| `GET`    | `/book/{securityId}`                                     | Read the aggregated bid/ask book                            |
+
+Cancel and modify live under `/instruments/{securityId}` so each order has a single URL. `POST` assigns the id; the client never sends one.
+
+```bash
+# rest a sell, then read the book
+curl -X POST localhost:5000/orders -H "Content-Type: application/json" \
+  -d '{"securityId":1,"username":"sam","side":"Sell","price":10000,"quantity":100}'
+# output -> {"orderId":1,"matched":false,"fills":[]}
+
+curl localhost:5000/book/1
+# output -> {"securityId":1,"bid":null,"ask":10000,"spread":null,"bids":[],"asks":[{"price":10000,"quantity":100}]}
+```
+
+As of Now, i placed a lock on the `OrderGateway` such that it guards every engine call.
+Username is caller-supplied for now; proper auth and concurrency model are still TODO.
+---
+
 ## Tech stack
 
 | Layer     | Technology                |
 |-----------|---------------------------|
 | Runtime   | .NET 10.0                 |
 | Language  | C# 13                     |
+| API       | ASP.NET Core Minimal APIs |
 | Testing   | xUnit + FluentAssertions  |
-| Hosting   | Microsoft Generic Host    |
+| Hosting   | ASP.NET Core (Kestrel)    |
 
 ---
 
@@ -116,9 +147,11 @@ Get-Content -Path (Get-ChildItem "logs/*/*.log" | Sort-Object LastWriteTime -Des
 - [x] Order-book structural layer (interfaces, sorted sets, linked lists)
 - [x] Matching engine (FIFO + pro-rata)
 - [x] Unit test suite
-- [ ] REST gateway (`POST /orders`, `DELETE /orders/{id}`, `GET /book`)
+- [x] REST gateway (order entry, modify, cancel, book snapshot)
 - [ ] WebSocket / SignalR layer (live book + trade broadcast)
 - [ ] Browser dashboard (order entry form + live book table)
-- [ ] Cloud deployment (backend on Render, frontend on Vercel)
+- [ ] Deployment and future upgrades 
 
 ---
+
+

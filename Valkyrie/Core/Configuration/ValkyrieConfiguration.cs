@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Valkyrie.Core.Configuration
+﻿namespace Valkyrie.Core.Configuration
 {
     class ValkyrieConfiguration
     {
-    public ValkyrieSettings ValkyrieSettings { get; set; }
+    public ValkyrieSettings? ValkyrieSettings { get; set; }
     }
 
     class TradingServerSettings

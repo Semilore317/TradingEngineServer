@@ -1,4 +1,5 @@
-﻿using Instruments;
+﻿using System.Diagnostics.CodeAnalysis;
+using Instruments;
 using Valkyrie.Orders;
 
 namespace Valkyrie.MatchingEngine;
@@ -9,4 +10,5 @@ public interface IMatchingEngine
    MatchResult AddOrder(Order order);
    MatchResult ChangeOrders(ModifyOrder modifyOrder);
    void RemoveOrder(CancelOrder cancelOrder);
+   bool TryGetSnapshot(long securityId, [MaybeNullWhen(false)] out OrderBookSnapshot snapshot);
 }
