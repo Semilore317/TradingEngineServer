@@ -19,7 +19,7 @@ public static class OrderEndpoints
             }
         });
 
-        app.MapDelete("/orders/{id:long}",
+        app.MapDelete("/instruments/{securityId:long}/orders/{id:long}",
             (long id, long securityId, string username, OrderGateway gateway) =>
             {
                 gateway.Cancel(id, securityId, username);
