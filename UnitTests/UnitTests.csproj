@@ -25,7 +25,7 @@
         <ProjectReference Include="..\MatchingEngine\MatchingEngine.csproj"/>
         <ProjectReference Include="..\OrderBook\OrderBook.csproj"/>
         <ProjectReference Include="..\Orders\Orders.csproj"/>
-        <ProjectReference Include="..\Valkyrie\appsettings.json" CopyToOutputDirectory = "PreserveNewest"/>
+        <Content Include="..\Valkyrie\appsettings.json" CopyToOutputDirectory = "PreserveNewest"/>
         <ProjectReference Include="..\Valkyrie\Valkyrie.csproj" />
     </ItemGroup>
 
