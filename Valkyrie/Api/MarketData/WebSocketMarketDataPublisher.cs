@@ -19,17 +19,17 @@ public sealed class WebSocketMarketDataPublisher(MarketDataHub Hub) : IMarketDat
         }));
     }
 
-    public void PublishBook(OrderBookSnapshot snapshot)
+    public void PublishBook(OrderBookSnapshot bookSnapshot)
     {
-        Hub.BroadCast(snapshot.SecurityId, Serialize(new
+        Hub.BroadCast(bookSnapshot.SecurityId, Serialize(new
         {
             type = "book", 
-            snapshot.SecurityId,
-            snapshot.Bid, 
-            snapshot.Ask, 
-            snapshot.Spread, 
-            snapshot.Bids,
-            snapshot.Asks
+            bookSnapshot.SecurityId,
+            bookSnapshot.Bid, 
+            bookSnapshot.Ask, 
+            bookSnapshot.Spread, 
+            bookSnapshot.Bids,
+            bookSnapshot.Asks
         }));
     }
     
