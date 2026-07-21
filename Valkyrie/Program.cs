@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using Valkyrie.Api;
+using Valkyrie.Api.MarketData;
 using Valkyrie.Core.Configuration;
 using Valkyrie.Instrument.Configuration;
 using Valkyrie.Logging;
@@ -52,9 +53,13 @@ using static System.AppContext;
     // this makes sure that i don't have to add actual enum values like side -> 2... much more intuitive from the json
     builder.Services.ConfigureHttpJsonOptions(
         o => o.SerializerOptions.Converters.Add(new JsonStringEnumConverter()));
+    builder.Services.AddSingleton<MarketDataHub>();
+    builder.Services.AddSingleton<IMarketDataPublisher, WebSocketMarketDataPublisher>();
     
     var app = builder.Build();
+    app.UseWebSockets(); // turns on the 101 middleware
     app.MapOrderEndpoints();
+    app.MapMarketDataEndpoints(); // registers /ws/marketdata
 
     var engine = app.Services.GetRequiredService<IMatchingEngine>();
 

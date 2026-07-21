@@ -90,7 +90,8 @@ Pick the matching algorithm in `Valkyrie/appsettings.json`:
 }
 ```
 
-This starts the host on `http://localhost:5000`, seeds the instruments listed in `appsettings.json`, and exposes the REST API below. A WebSocket feed and a browser dashboard are still on the roadmap.
+This starts the host on `http://localhost:5000`, seeds the instruments listed in `appsettings.json`, and exposes the REST API below.
+A live WebSocket feed is exposed at `ws://localhost:500/ws/marketdata`; a dashboard is still on the roadmap
 
 ### Logs
 
@@ -115,6 +116,20 @@ With the host running, four endpoints are live on `http://localhost:5000`. Price
 
 Cancel and modify live under `/instruments/{securityId}` so each order has a single URL. `POST` assigns the id; the client never sends one.
 
+## WebSocket Feed
+A live market-data feed runs alongside the REST API at `ws://localhost:5000/ws/marketdata`.
+Clients subscribe per instrument, receive a book snapshot, then get a push on every change. One socket carries two logical
+streams, tagged by a `type` to demux the socket client-side.
+
+### Try it from the Browser Console
+```js
+const ws = new WebSocket('ws://localhost:5000/ws/marketdata');
+ws.onopen    = () => { console.log('OPEN'); ws.send(JSON.stringify({ action: 'subscribe', securityId: 1 })); };
+ws.onmessage = e => console.log('MSG', JSON.parse(e.data));
+ws.onerror   = () => console.log('ERR');
+```
+Then place a crossing order over REST and watch the `book` and `trade` frames appear.
+
 ```bash
 # rest a sell, then read the book
 curl -X POST localhost:5000/orders -H "Content-Type: application/json" \
@@ -127,6 +142,14 @@ curl localhost:5000/book/1
 
 As of Now, i placed a lock on the `OrderGateway` such that it guards every engine call.
 Username is caller-supplied for now; proper auth and concurrency model are still TODO.
+
+Aside that, I'm using full-book snapshots, not incremental deltas (for now). Every `book` message
+carries the *entire* current depth, not just what changed.   
+The trade-off? full snapshots are **stateless and self-healing**; a client that
+connects late, drops a frame, or reconnects is instantly correct, without me needing to write code for correction.  
+The cost is bandwidth: each update resends levels that didn't move.  
+The alternative would be some sort of delta snapshot, sending only the changes in each snapshot. I'll work on implementing that later
+
 ---
 
 ## Tech stack
@@ -148,7 +171,7 @@ Username is caller-supplied for now; proper auth and concurrency model are still
 - [x] Matching engine (FIFO + pro-rata)
 - [x] Unit test suite
 - [x] REST gateway (order entry, modify, cancel, book snapshot)
-- [ ] WebSocket / SignalR layer (live book + trade broadcast)
+- [x] WebSocket layer (live book + trade broadcast)
 - [ ] Browser dashboard (order entry form + live book table)
 - [ ] Deployment and future upgrades 
 
