@@ -12,7 +12,7 @@ public class SyntheticMarketSource(
     IOptions<MarketSimulatorConfiguration> config
 ) : IMarketDataSource
 {
-    private readonly MarketSimulatorConfiguration _config = config.Value;
+//    private readonly MarketSimulatorConfiguration _config = config.Value;
 
     public string Name => "Synthetic Simulator";
 
