@@ -3,6 +3,7 @@ using Instruments;
 using Microsoft.Extensions.Options;
 using Valkyrie.Api;
 using Valkyrie.Api.MarketData;
+using Valkyrie.Api.Simulation;
 using Valkyrie.Core.Configuration;
 using Valkyrie.Instrument.Configuration;
 using Valkyrie.Logging;
@@ -57,7 +58,7 @@ builder.Services.AddSingleton<MarketDataHub>();
 builder.Services.AddSingleton<IMarketDataPublisher, WebSocketMarketDataPublisher>();
 builder.Services.ConfigureHttpJsonOptions(
     o => o.SerializerOptions.Converters.Add(new JsonStringEnumConverter()));
-
+builder.Services.AddSingleton<IMarketDataSource, Valkyrie.Core.Configuration.SyntheticMarketSource>();
 // hosted services
 builder.Services.AddHostedService<Valkyrie.Core.Valkyrie>(); // the background service... it still runs
 builder.Services.AddHostedService<Valkyrie.Api.Simulation.MarketSimulator>();
