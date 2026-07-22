@@ -1,11 +1,10 @@
 ﻿using Microsoft.Extensions.Options;
-using Valkyrie.Api;
 using Valkyrie.Api.Dto;
-using Valkyrie.Api.Simulation;
+using Valkyrie.Core.Configuration;
 using Valkyrie.Logging;
 using Valkyrie.Orders;
 
-namespace Valkyrie.Core.Configuration;
+namespace Valkyrie.Api.Simulation;
 
 public class SyntheticMarketSource(
     OrderGateway gateway,
