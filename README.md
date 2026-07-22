@@ -59,7 +59,7 @@ Valkyrie/ (solution root)
 ├── MatchingEngine/       Multi-book orchestrator + FIFO / pro-rata algorithms
 ├── Logging/              Async logger (only text is supported for now in .log files)
 ├── UnitTests/            xUnit + FluentAssertions (+ WebApplicationFactory API tests)
-└── Valkyrie/             DI wiring + REST API host (Api/ = endpoints, gateway, DTOs)
+└── Valkyrie/             DI wiring + REST API host (Api/ = endpoints, gateway, DTOs, Simulations)
 ```
 
 **Order book.** Price levels live in a `SortedSet<Limit>` ordered by `BidLimitComparer` (descending) and `AskLimitComparer` (ascending), so the best bid/ask is always `Min`. Every order is additionally indexed in a `Dictionary<long, OrderbookEntry>` for O(1) lookup and cancel.
@@ -140,6 +140,16 @@ curl localhost:5000/book/1
 # output -> {"securityId":1,"bid":null,"ask":10000,"spread":null,"bids":[],"asks":[{"price":10000,"quantity":100}]}
 ```
 
+## Market Simulator
+A background service seeds and drives synthetic order flow through the same `OrderGateway` the REST API uses
+, so the book and trade tape stay live with no manual input. Each intrument gets its own loop; a random fair value plus
+a Poisson arrival process for order timing, mixing resting liquidity, cancels and crossing orders.
+
+The flow source sits behind an interface:  `IMarketDataSource`, since I'm going to add a historical replay source later
+without modifying the host, [LOBSTER](https://lobsterdata.com/home) looks appealing... 
+
+---
+
 As of Now, i placed a lock on the `OrderGateway` such that it guards every engine call.
 Username is caller-supplied for now; proper auth and concurrency model are still TODO.
 
@@ -172,6 +182,7 @@ The alternative would be some sort of delta snapshot, sending only the changes i
 - [x] Unit test suite
 - [x] REST gateway (order entry, modify, cancel, book snapshot)
 - [x] WebSocket layer (live book + trade broadcast)
+- [x] Market simulator (synthetic order flow)
 - [ ] Browser dashboard (order entry form + live book table)
 - [ ] Deployment and future upgrades 
 
