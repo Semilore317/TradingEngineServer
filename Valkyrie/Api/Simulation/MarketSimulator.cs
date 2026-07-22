@@ -6,6 +6,10 @@ using Valkyrie.Orders;
 
 namespace Valkyrie.Api.Simulation;
 
+/// <summary>
+/// implements a stochastic* market simulation using a random walk for price movements
+/// and a poisson arrival process(Jitter) for "realistic" order delays
+/// </summary>
 public class MarketSimulator(
     OrderGateway gateway,
     ITextLogger logger,
@@ -144,10 +148,13 @@ public class MarketSimulator(
                     Aggress(instrument, rng);
                 TrimBook(instrument, resting);
             }
+            catch (OperationCanceledException e)
+            {
+                break; // graceful shutdown
+            }
             catch (Exception e)
             {
-                Console.WriteLine(e);
-                throw;
+                logger.Info("MarketSimulator", $"tick error on {instrument.SecurityId}:  {e.Message}");
             }
         }
     }
