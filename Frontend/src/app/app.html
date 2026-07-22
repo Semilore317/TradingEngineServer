@@ -69,5 +69,62 @@
     </div>
   </header>
 
-  <!-- depth ladder, order form working orders, trade tape-->
+  <div class="grid">
+    <!-- depth ladder-->
+    <section class="panel" aria-label="Order Book Depth">
+      <div class="phead">
+        <h2>Depth Order · Book</h2>
+        <span class="meta">
+          Level 2 · {{ askRows().length + bidRows().length }} levels
+        </span>
+      </div>
+
+      <div class="colhead">
+        <span>Price · USD</span>
+        <span>Size</span>
+        <span>Cumulative</span>
+      </div>
+
+      <div class="ladder">
+        @for (row of askRows(); track row.price) {
+          <div class="lrow ask" [class.best]="row.isBest">
+            <div class="depth" [style.width.&]="row.depthPercentage"></div>
+            <span class="px num">{{ (row.price / 100).toFixed(2) }}</span>
+            <span class="sz num">{{ row.quantity }}</span>
+            <span class="cm num">{{ row.cumulative }}</span>
+          </div>
+        }
+      </div>
+
+      <div class="spreadband">
+        <div class="side a">
+          <span class="t">Best Ask</span>
+          <span class="p num">{{ (bestAsk()! / 100).toFixed(2) }}</span>
+        </div>
+
+        <div class="mid">
+          <span class="sv num">{{ (mid()! / 100).toFixed(3) }}</span>
+          <span class="sc">spread {{ spreadCents() }}¢</span>
+        </div>
+
+        <div class="side b">
+          <span class="t">Best Bid</span>
+          <span class="p num">{{ (bestBid()! / 100).toFixed(2) }}</span>
+        </div>
+      </div>
+
+      <div class="ladder">
+        @for (row of bidRows(); track row.price) {
+          <div class="lrow bid" [class.best]="row.isBest">
+            <div class="depth" [style.width.%]="row.depthPercentage"></div>
+            <span class="px num">{{ (row.price / 100).toFixed(2) }}</span>
+            <span class="sz num">{{ row.quantity }}</span>
+            <span class="cm num">{{ row.cumulative }}</span>
+          </div>
+        }
+      </div>
+    </section>
+  </div>
+
+  <!-- Order Form, working orders, trade tape....-->
 </div>

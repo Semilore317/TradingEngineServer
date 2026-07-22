@@ -319,7 +319,7 @@ header {
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  paddinig: 7px 11px;
+  padding: 7px 11px;
   border: 1px solid var(--line);
   border-radius: 3px;
 

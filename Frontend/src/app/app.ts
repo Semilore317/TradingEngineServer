@@ -1,10 +1,23 @@
-import { Component, signal } from '@angular/core';
+import { Component, computed, signal } from '@angular/core';
 
-interface Instrument{
+interface Instrument {
   securityId: number;
   symbol: string;
-  last: number; // last price in $$$
-  changePercent: number; // day change %
+  last: number;
+  changePercent: number;
+}
+
+interface Level {
+  price: number;
+  quantity: number;
+}
+
+interface LadderRow {
+  price: number;
+  quantity: number;
+  cumulative: number;
+  depthPercentage: number;
+  isBest: boolean;
 }
 
 @Component({
@@ -14,29 +27,79 @@ interface Instrument{
   styleUrl: './app.css'
 })
 export class App {
-  constructor() {
-  }
+  readonly dark = signal(typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+  readonly activeId = signal(1);
 
-  // --sample data for now, real data from the API will come later
   readonly instruments = signal<Instrument[]>([
-    {securityId: 1, symbol: 'MSFT', last: 418.05, changePercent: 15},
-    {securityId: 2, symbol: 'AAPL', last: 227.15, changePercent: -0.18},
-    {securityId: 3, symbol: 'MSFT', last: 180.55, changePercent: 2.94},
+    { securityId: 1, symbol: 'MSFT', last: 418.05, changePercent: 1.5 },
+    { securityId: 2, symbol: 'AAPL', last: 227.15, changePercent: -0.18 },
+    { securityId: 3, symbol: 'NVDA', last: 180.55, changePercent: 2.94 },
   ]);
 
-  readonly activeId = signal(1); // which tab is selected
-  readonly dark = signal(matchMedia('(prefers-color-scheme: dark)').matches); // theme
+  readonly asks = signal<Level[]>([
+    { price: 41810, quantity: 120 }, { price: 41815, quantity: 340 },
+    { price: 41820, quantity: 120 }, { price: 41825, quantity: 560 },
+    { price: 41835, quantity: 150 }, { price: 41850, quantity: 700 },
+  ]);
 
-  select(id: number): void{
-    this.activeId.set(id);
-  }
+  readonly bids = signal<Level[]>([
+    { price: 41800, quantity: 260 }, { price: 41795, quantity: 480 },
+    { price: 41790, quantity: 190 }, { price: 41780, quantity: 620 },
+    { price: 41770, quantity: 300 }, { price: 41755, quantity: 540 },
+  ]);
 
-  toggleTheme(): void{
-    this.dark.update(d => !d);
+  constructor() {
     this.applyTheme();
   }
 
-  private applyTheme(): void{
-    document.documentElement.setAttribute('data-theme',this.dark() ? 'dark' : 'light');
+  toggleTheme(): void {
+    this.dark.update((d: boolean) => !d);
+    this.applyTheme();
+  }
+
+  private applyTheme(): void {
+    if (typeof document !== 'undefined') {
+      document.documentElement.setAttribute('data-theme', this.dark() ? 'dark' : 'light');
+    }
+  }
+
+  private readonly maxCumulative = computed(() => {
+    const total = (ls: Level[]) => ls.reduce((s, l) => s + l.quantity, 0);
+    return Math.max(1, total(this.asks()), total(this.bids()));
+  });
+
+  readonly askRows = computed(() => this.toLadder(this.asks()).reverse());
+  readonly bidRows = computed(() => this.toLadder(this.bids()));
+
+  private toLadder(levels: Level[]): LadderRow[] {
+    const max = this.maxCumulative();
+    let cumulative = 0;
+    return levels.map((l, i) => {
+      cumulative += l.quantity;
+      return {
+        price: l.price,
+        quantity: l.quantity,
+        cumulative,
+        depthPercentage: (cumulative / max) * 100,
+        isBest: i === 0
+      };
+    });
+  }
+
+  readonly bestAsk = computed(() => this.asks()[0]?.price ?? null);
+  readonly bestBid = computed(() => this.bids()[0]?.price ?? null);
+
+  readonly spreadCents = computed(() => {
+    const a = this.bestAsk(), b = this.bestBid();
+    return a !== null && b !== null ? a - b : null;
+  });
+
+  readonly mid = computed(() => {
+    const a = this.bestAsk(), b = this.bestBid();
+    return a !== null && b !== null ? (a + b) / 200 : null;
+  });
+
+  select(id: number): void {
+    this.activeId.set(id);
   }
 }
