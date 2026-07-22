@@ -4,7 +4,7 @@ interface Instrument{
   securityId: number;
   symbol: string;
   last: number; // last price in $$$
-  changePct: number; // day change %
+  changePercent: number; // day change %
 }
 
 @Component({
@@ -19,9 +19,9 @@ export class App {
 
   // --sample data for now, real data from the API will come later
   readonly instruments = signal<Instrument[]>([
-    {securityId: 1, symbol: 'MSFT', last: 418.05, changePct: 15},
-    {securityId: 2, symbol: 'AAPL', last: 227.15, changePct: -0.18},
-    {securityId: 3, symbol: 'MSFT', last: 180.55, changePct: 2.94},
+    {securityId: 1, symbol: 'MSFT', last: 418.05, changePercent: 15},
+    {securityId: 2, symbol: 'AAPL', last: 227.15, changePercent: -0.18},
+    {securityId: 3, symbol: 'MSFT', last: 180.55, changePercent: 2.94},
   ]);
 
   readonly activeId = signal(1); // which tab is selected

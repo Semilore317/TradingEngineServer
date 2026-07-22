@@ -124,8 +124,8 @@ body {
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 
-  background-image: linear-gradient(var(--line) 1px, transparent 1px),
-  linear-gradient(90deg, var(--line) 1px, transparent 1px);
+  /*background-image: linear-gradient(var(--line) 1px, transparent 1px),
+  linear-gradient(90deg, var(--line) 1px, transparent 1px);*/
   background-size: 100% 100%;
   background-blend-mode: normal;
 }
@@ -138,6 +138,7 @@ body {
   z-index: 0;
   opacity: 0.5;
 
+  /*squares effect*/
   background-image: linear-gradient(var(--line) 1px, transparent 1px),
   linear-gradient(90deg, var(--line) 1px, transparent 1px);
 
@@ -355,7 +356,7 @@ header {
   border: 1.5px solid var(--accent);
 }
 
-.tgl {
+.toggle {
   width: 34px;
   height: 34px;
 
@@ -370,17 +371,17 @@ header {
   place-items: center;
 }
 
-.tgl:hover {
+.toggle:hover {
   border-color: var(--line-2);
   color: var(--ink);
 }
 
-.tgl:hover {
+.toggle:hover {
   border-color: var(--line-2);
   color: var(--ink);
 }
 
-.tgl svg {
+.toggle svg {
   width: 14px;
   height: 14px;
 }
