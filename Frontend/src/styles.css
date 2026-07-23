@@ -500,15 +500,15 @@ canvas#trace {
   color: var(--ink-2);
 }
 
-.colHead {
-  display: flex;
+.colhead {
+  display: grid;
   grid-template-columns: 1fr 1fr 1fr;
   padding: 8px 14px;
   border-bottom: 1px solid var(--line);
   background: var(--bg-3);
 }
 
-.colHead span {
+.colhead span {
   font-family: var(--font-sans);
   text-transform: uppercase;
   letter-spacing: .15em;
@@ -516,11 +516,11 @@ canvas#trace {
   color: var(--ink-3);
 }
 
-.colHead span:nth-child(2) {
+.colhead span:nth-child(2) {
   text-align: right;
 }
 
-.colHead span:nth-child(3) {
+.colhead span:nth-child(3) {
   text-align: right;
 }
 
@@ -530,11 +530,20 @@ canvas#trace {
 
 .lrow {
   position: relative;
+  display: grid;
   top: 1px;
   bottom: 1px;
   right: 0;
+  grid-template-columns: 1fr 1fr 1fr;
   z-index: 0;
   border-left: 1px solid transparent;
+}
+
+.lrow .depth{
+  position: absolute;
+  top: 1px;
+  bottom: 1px;
+  right: 0;
 }
 
 .lrow.ask .depth {
@@ -632,7 +641,7 @@ canvas#trace {
 .spreadband .side.a .p {
   color: var(--ask);
   font-weight: 600;
-  font-style: 13px;
+  font-size: 13px;
 }
 
 .spreadband .side.b .p {
