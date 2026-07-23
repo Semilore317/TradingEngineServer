@@ -88,7 +88,7 @@
       <div class="ladder">
         @for (row of askRows(); track row.price) {
           <div class="lrow ask" [class.best]="row.isBest">
-            <div class="depth" [style.width.&]="row.depthPercentage"></div>
+            <div class="depth" [style.width.%]="row.depthPercentage"></div>
             <span class="px num">{{ (row.price / 100).toFixed(2) }}</span>
             <span class="sz num">{{ row.quantity }}</span>
             <span class="cm num">{{ row.cumulative }}</span>
@@ -127,4 +127,86 @@
   </div>
 
   <!-- Order Form, working orders, trade tape....-->
+  <div class="stack">
+    <!--New order-->
+    <section class="panel">
+      <div class="phead">
+        <h2>New Order</h2>
+        <span class="meta">{{ activeInstrument()?.symbol }} ·  id {{ activeInstrument()?.securityId }}</span>
+      </div>
+
+
+      <form class="entry" autocomplete="off" (submit)="submit($event)">
+        <div class="seg" role="group" aria-label="Order side">
+          <button type="button" data-side="buy"
+                  [attr.aria-pressed]="side() == 'buy'" (click)="setSide('buy')"
+          >
+            Buy · Bid
+          </button>
+          <button type="button" data-side="sell"
+                  [attr.aria-pressed]="side() == 'sell'" (click)="setSide('sell')"
+          >
+            Sell · Ask
+          </button>
+        </div>
+
+        <div class="field">
+          <label><span class="label">Trader</span></label>
+          <div class="inp">
+            <span class="pfx">&#64;</span>
+            <input [value]="trader()" (input)="updateInput(trader, $event)" spellcheck="false">
+          </div>
+        </div>
+
+        <div class="field">
+          <label>
+            <span class="label">Limit Price</span>
+            <span class="hint">dollars - converted to cents</span>
+          </label>
+          <div class="inp">
+            <span class="pfx">$</span>
+            <input class="num" inputmode="decimal"
+                   [value]="priceInput()" (input)="updateInput(priceInput, $event)">
+            <span class="sfx">USD</span>
+          </div>
+        </div>
+
+        <div class="convert">
+          <span class="l">Sent To Exchange</span>
+          <span>
+            <span class="arrow">&rarr;</span>
+            <span class="cents num">
+              <em>{{ priceCents() }}</em>¢
+            </span>
+          </span>
+        </div>
+
+        <div class="field">
+          <label>
+            <span class="label">Quantity</span>
+            <span class="hint">shares</span>
+          </label>
+
+          <div class="inp">
+            <input class="num" inputmode="numeric" [value]="quantityInput()"
+                   (input)="updateInput(quantityInput, $event)">
+            <span class="sfx">sh</span>
+          </div>
+        </div>
+
+        <div class="totals">
+          <span class="l">Notional</span>
+          <span class="v sum">
+            {{ '$' + notional().toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) }}
+          </span>
+        </div>
+
+        <button type="submit" class="submit" [attr.data-side]="side()">
+          Place {{ side() }} order
+        </button>
+      </form>
+    </section>
+
+    <!--Orders Panel -->
+  </div>
 </div>

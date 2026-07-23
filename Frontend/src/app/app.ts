@@ -1,4 +1,4 @@
-import { Component, computed, signal } from '@angular/core';
+import {Component, computed, signal, WritableSignal} from '@angular/core';
 
 interface Instrument {
   securityId: number;
@@ -31,21 +31,21 @@ export class App {
   readonly activeId = signal(1);
 
   readonly instruments = signal<Instrument[]>([
-    { securityId: 1, symbol: 'MSFT', last: 418.05, changePercent: 1.5 },
-    { securityId: 2, symbol: 'AAPL', last: 227.15, changePercent: -0.18 },
-    { securityId: 3, symbol: 'NVDA', last: 180.55, changePercent: 2.94 },
+    {securityId: 1, symbol: 'MSFT', last: 418.05, changePercent: 1.5},
+    {securityId: 2, symbol: 'AAPL', last: 227.15, changePercent: -0.18},
+    {securityId: 3, symbol: 'NVDA', last: 180.55, changePercent: 2.94},
   ]);
 
   readonly asks = signal<Level[]>([
-    { price: 41810, quantity: 120 }, { price: 41815, quantity: 340 },
-    { price: 41820, quantity: 120 }, { price: 41825, quantity: 560 },
-    { price: 41835, quantity: 150 }, { price: 41850, quantity: 700 },
+    {price: 41810, quantity: 120}, {price: 41815, quantity: 340},
+    {price: 41820, quantity: 120}, {price: 41825, quantity: 560},
+    {price: 41835, quantity: 150}, {price: 41850, quantity: 700},
   ]);
 
   readonly bids = signal<Level[]>([
-    { price: 41800, quantity: 260 }, { price: 41795, quantity: 480 },
-    { price: 41790, quantity: 190 }, { price: 41780, quantity: 620 },
-    { price: 41770, quantity: 300 }, { price: 41755, quantity: 540 },
+    {price: 41800, quantity: 260}, {price: 41795, quantity: 480},
+    {price: 41790, quantity: 190}, {price: 41780, quantity: 620},
+    {price: 41770, quantity: 300}, {price: 41755, quantity: 540},
   ]);
 
   constructor() {
@@ -101,5 +101,43 @@ export class App {
 
   select(id: number): void {
     this.activeId.set(id);
+  }
+
+
+// order entry
+  readonly side = signal<'buy' | 'sell'>('buy');
+  readonly trader = signal('sbanks');
+  readonly priceInput = signal('418.50');
+  readonly quantityInput = signal('500');
+  readonly activeInstrument = computed(() => this.instruments().find(i => i.securityId === this.activeId()) ?? null);
+  readonly priceCents = computed(() => Math.round((parseFloat(this.priceInput()) || 0) * 100));
+  readonly quantity = computed(() => parseInt(this.quantityInput(), 10) ||  0);
+  readonly notional = computed(() => (this.priceCents() * this.quantity()) / 100);
+
+
+  setSide(s: 'buy' | 'sell'): void {
+    this.side.set(s);
+  }
+/*
+  inputValue(e: Event): void {
+    return (e.target as HTMLInputElement).value;
+  }
+*/
+  updateInput(targetSignal: WritableSignal<string>, event: Event): void {
+    targetSignal.set((event.target as HTMLInputElement).value);
+  }
+
+  submit(e: Event): void {
+    e.preventDefault();
+
+    const order = {
+      securityId: this.activeId(),
+      username: this.trader(),
+      side: this.side() == 'buy' ? 'Buy' : 'Sell',  // API ENUM casting
+      price: this.priceCents(),                     // integer cents since it matches the API
+      quantity: this.quantity()
+    };
+
+    console.log('submit order ->', order); //next step wires the real POST
   }
 }
