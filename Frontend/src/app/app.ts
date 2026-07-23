@@ -96,7 +96,7 @@ export class App {
 
   readonly mid = computed(() => {
     const a = this.bestAsk(), b = this.bestBid();
-    return a !== null && b !== null ? (a + b) / 200 : null;
+    return a !== null && b !== null ? (a + b) / 2: null;
   });
 
   select(id: number): void {

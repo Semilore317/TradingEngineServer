@@ -18,6 +18,13 @@ describe('App', () => {
     const fixture = TestBed.createComponent(App);
     await fixture.whenStable();
     const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('h1')?.textContent).toContain('Hello, frontend');
+    expect(compiled.querySelector('h1')?.textContent).toContain('Valkyrie');
   });
+
+  it('renders the brand', async () =>{
+    const  fixture = TestBed.createComponent(App);
+    await fixture.whenStable();
+    const el = fixture.nativeElement as HTMLElement;
+    expect(el.querySelector('.word b')?.textContent).toContain('VALKYRIE');
+  })
 });
