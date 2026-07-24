@@ -539,7 +539,7 @@ canvas#trace {
   border-left: 1px solid transparent;
 }
 
-.lrow .depth{
+.lrow .depth {
   position: absolute;
   top: 1px;
   bottom: 1px;
@@ -853,6 +853,12 @@ form.entry {
   font-weight: 600;
 }
 
+.form-error {
+  margin: 0 0 12px;
+  color: var(--ask);
+  font-size: 11px;
+}
+
 .submit {
   width: 100%;
   padding: 13px;
@@ -865,6 +871,11 @@ form.entry {
   letter-spacing: .12em;
   font-size: 12px;
   color: var(--accent-ink);
+}
+
+.submit:disabled {
+  cursor: wait;
+  opacity: 0.5;
 }
 
 .submit[data-side="buy"] {

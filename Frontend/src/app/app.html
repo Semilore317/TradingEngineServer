@@ -201,7 +201,10 @@
           </span>
         </div>
 
-        <button type="submit" class="submit" [attr.data-side]="side()">
+        @if(submitError()){
+          <p class="form-error">{{submitError()}}</p>
+        }
+        <button type="submit" class="submit" [attr.data-side]="side()" [disabled]="isSubmitting()">
           Place {{ side() }} order
         </button>
       </form>

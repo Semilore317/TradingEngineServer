@@ -1,4 +1,5 @@
-import {Component, computed, signal, WritableSignal} from '@angular/core';
+import {inject, Component, computed, signal, WritableSignal} from '@angular/core';
+import {TradingApiService} from './TradingApi.service';
 
 interface Instrument {
   securityId: number;
@@ -96,7 +97,7 @@ export class App {
 
   readonly mid = computed(() => {
     const a = this.bestAsk(), b = this.bestBid();
-    return a !== null && b !== null ? (a + b) / 2: null;
+    return a !== null && b !== null ? (a + b) / 2 : null;
   });
 
   select(id: number): void {
@@ -111,33 +112,58 @@ export class App {
   readonly quantityInput = signal('500');
   readonly activeInstrument = computed(() => this.instruments().find(i => i.securityId === this.activeId()) ?? null);
   readonly priceCents = computed(() => Math.round((parseFloat(this.priceInput()) || 0) * 100));
-  readonly quantity = computed(() => parseInt(this.quantityInput(), 10) ||  0);
+  readonly quantity = computed(() => parseInt(this.quantityInput(), 10) || 0);
   readonly notional = computed(() => (this.priceCents() * this.quantity()) / 100);
 
 
   setSide(s: 'buy' | 'sell'): void {
     this.side.set(s);
   }
-/*
-  inputValue(e: Event): void {
-    return (e.target as HTMLInputElement).value;
-  }
-*/
+
+  /*
+    inputValue(e: Event): void {
+      return (e.target as HTMLInputElement).value;
+    }
+  */
   updateInput(targetSignal: WritableSignal<string>, event: Event): void {
     targetSignal.set((event.target as HTMLInputElement).value);
   }
 
+  private readonly api = inject(TradingApiService);
+  readonly submitError = signal('');
+  readonly isSubmitting = signal(false);
+
   submit(e: Event): void {
-    e.preventDefault();
+    event?.preventDefault();
+    this.submitError.set('');
 
-    const order = {
+    if(!this.trader().trim()){
+      this.submitError.set("Enter a trader name");
+      return;
+    }
+
+    if(this.priceCents() <= 0 || this.quantity() <= 0){
+      this.submitError.set("Price & Quantity must be greater than 0");
+    }
+
+    this.isSubmitting.set(true);
+
+    this.api.placeOrder({
       securityId: this.activeId(),
-      username: this.trader(),
-      side: this.side() == 'buy' ? 'Buy' : 'Sell',  // API ENUM casting
-      price: this.priceCents(),                     // integer cents since it matches the API
-      quantity: this.quantity()
-    };
-
-    console.log('submit order ->', order); //next step wires the real POST
+      username: this.trader().trim(),
+      side: this.side() === 'buy'? 'Buy': 'Sell',
+      price: this.priceCents(),
+      quantity: this.quantity(),
+    }).subscribe({
+      next: ack => {
+        console.log(`Order Accepted`, ack);
+        this.isSubmitting.set(false);
+      },
+      error: () => {
+        this.submitError.set(`Order not accepted.`);
+        this.isSubmitting.set(false);
+      },
+    });
   }
 }
+
