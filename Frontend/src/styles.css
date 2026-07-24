@@ -417,7 +417,7 @@ header {
 }
 
 .strip .cell.name h1 {
-  margini: 0;
+  margin: 0;
   font-family: var(--font-sans);
   font-size: 15px;
   letter-spacing: .02em;

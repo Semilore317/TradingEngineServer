@@ -45,7 +45,7 @@
     <div class="hstatus">
       <span class="chip live">
         <span class="sq"></span>
-        <b>{{connectionStatus()}}</b>
+        <b>{{ connectionStatus() }}</b>
       </span>
 
       <button
@@ -68,6 +68,45 @@
       </button>
     </div>
   </header>
+
+  <section class="strip" aria-label="Selected Instrument Summary">
+    <div class="cell name">
+      <h1>
+        {{ activeInstrument()?.symbol }}
+        <em>
+          {{ activeInstrument()?.name }} · id {{ activeInstrument() ? securityId }}
+        </em>
+      </h1>
+    </div>
+
+    <div class="cell">
+      <span class="label">Best Bid</span>
+      <span class="v num up">
+        {{ bestBid() === null ? '-' : (bestBid()! / 100).toFixed(2) }}
+      </span>
+    </div>
+
+    <div class="cell">
+      <span class="label">Best Ask</span>
+      <span class="v num down">
+        {{ bestAsk() === null ? '-' : (bestAsk()! / 100).toFixed(2) }}
+      </span>
+    </div>
+
+    <div class="cell">
+      <span class="label">Spread</span>
+      <span class="v num">
+        {{ spreadCents() === null ? '-' : (spreadCents()! / 100).toFixed(2) }}
+      </span>
+    </div>
+
+    <div class="cell">
+      <span class="label">Book Depth</span>
+      <span class="v num">
+        {{ totalBookDepth().toLocaleString() }}
+      </span>
+    </div>
+  </section>
 
   <div class="grid">
     <!-- depth ladder-->
@@ -201,8 +240,8 @@
           </span>
         </div>
 
-        @if(submitError()){
-          <p class="form-error">{{submitError()}}</p>
+        @if (submitError()) {
+          <p class="form-error">{{ submitError() }}</p>
         }
         <button type="submit" class="submit" [attr.data-side]="side()" [disabled]="isSubmitting()">
           Place {{ side() }} order
