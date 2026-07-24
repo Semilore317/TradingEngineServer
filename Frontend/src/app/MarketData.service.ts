@@ -1,6 +1,7 @@
-﻿import {Injectable} from '@angular/core';
+﻿import { Injectable } from '@angular/core';
+import { MarketMessage } from './trading.models';
 
-@Injectable({providedIn: 'root'})
+@Injectable({ providedIn: 'root' })
 export class MarketDataService {
   private socket?: WebSocket;
 
@@ -15,6 +16,7 @@ export class MarketDataService {
     const url = `${protocol}//${location.host}/ws/marketdata`;
 
     this.socket = new WebSocket(url);
+
     this.socket.onopen = () => {
       onStatus('LIVE');
 
@@ -24,16 +26,20 @@ export class MarketDataService {
       }));
     };
 
+    this.socket.onmessage = (event: MessageEvent<string>) => {
+      onMessage(JSON.parse(event.data) as MarketMessage);
+    };
+
     this.socket.onerror = () => onStatus('CONNECTION ERROR');
     this.socket.onclose = () => onStatus('OFFLINE');
   }
 
   disconnect(): void {
-    if(!this.socket)
-      return;
+    if (!this.socket) return;
 
-    if(this.socket.readyState === WebSocket.OPEN)
+    if (this.socket.readyState === WebSocket.OPEN) {
       this.socket.close();
+    }
 
     this.socket = undefined;
   }

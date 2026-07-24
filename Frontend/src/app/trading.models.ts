@@ -28,7 +28,7 @@ export type MarketMessage = BookMessage | TradeMessage;
 export interface PlaceOrderRequest{
   securityId: number;
   username: string;
-  side: 'Buy' | 'sell';
+  side: 'Buy' | 'Sell';
   price: number;
   quantity: number;
 }
