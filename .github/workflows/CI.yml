@@ -1,35 +1,37 @@
 ﻿name: CI
 
 on:
-  push: 
-    branches: ["master"]
-    
-  pull_request: 
-    branches: ["master"]
-    
+  push:
+    branches: [ "master" ]
+  
+  pull_request:
+    branches: [ "master" ]
+
 jobs:
-  .NET:
+  dotnet:
+    name: .NET
     runs-on: ubuntu-latest
     
     steps:
       - uses: actions/checkout@v4
-        
+
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 10.0.x
-          
+
       - name: Restore
         run: dotnet restore Valkyrie.slnx
-        
-        
+
+
       - name: Build
         run: dotnet build Valkyrie.slnx --no-restore -c Release
-        
+
       - name: Test
         run: dotnet test Valkyrie.slnx --no-build -c Release --verbosity normal
 
-  Angular:
+  angular:
+    name: Angular
     runs-on: ubuntu-latest
 
     steps:
