@@ -991,6 +991,28 @@ form.entry {
   overflow-y: auto;
 }
 
+.tape-head{
+  display: grid;
+  grid-template-columns: 1.25fr 1fr .75fr .7fr;
+  gap: 12px;
+  padding: 8px 15px;
+  background: var(--bg-3);
+  border-bottom: 1px solid var(--line);
+  color: var(--ink-3);
+  font-family: var(--font-sans);
+  font-size: 10px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+
+.tape-head span:not(:first-child) {
+  text-align: right;
+}
+
+.taperow{
+  grid-template-columns: 1.25fr 1fr .75fr .7fr;
+}
+
 .taperow {
   display: grid;
   grid-template-columns: auto 1fr auto auto;

@@ -6,9 +6,10 @@ import {
   OnInit,
   signal
 } from '@angular/core';
-import { MarketDataService } from './MarketData.service';
-import { TradingApiService } from './TradingApi.service';
-import { BookMessage, MarketMessage, WorkingOrder } from './trading.models';
+import {DatePipe} from '@angular/common';
+import {MarketDataService} from './MarketData.service';
+import {TradingApiService} from './TradingApi.service';
+import {BookMessage, MarketMessage, WorkingOrder} from './trading.models';
 
 interface Instrument {
   securityId: number;
@@ -31,9 +32,17 @@ interface LadderRow {
   isBest: boolean;
 }
 
+interface TapeRow {
+  id: string,
+  price: number;
+  quantity: number;
+  side: 'buy' | 'sell';
+  filledAt: string;
+}
+
 @Component({
   selector: 'app-root',
-  imports: [],
+  imports: [DatePipe],
   templateUrl: './app.html',
   styleUrl: './app.css'
 })
@@ -41,6 +50,7 @@ export class App implements OnInit, OnDestroy {
   private readonly marketData = inject(MarketDataService);
   private readonly api = inject(TradingApiService);
 
+  readonly tape = signal<TapeRow[]>([]);
   readonly workingOrders = signal<WorkingOrder[]>([]);
   readonly connectionStatus = signal('CONNECTING');
   readonly dark = signal(
@@ -49,21 +59,21 @@ export class App implements OnInit, OnDestroy {
   readonly activeId = signal(1);
 
   readonly instruments = signal<Instrument[]>([
-    { securityId: 1, symbol: 'MSFT', name:'Microsoft Corp', last: 418.05, changePercent: 1.5 },
-    { securityId: 2, symbol: 'AAPL', name:'Apple Inc', last: 227.15, changePercent: -0.18 },
-    { securityId: 3, symbol: 'NVDA', name:'Space Exploration Technologies Corp',last: 180.55, changePercent: 2.94 },
+    {securityId: 1, symbol: 'MSFT', name: 'Microsoft Corp', last: 418.05, changePercent: 1.5},
+    {securityId: 2, symbol: 'AAPL', name: 'Apple Inc', last: 227.15, changePercent: -0.18},
+    {securityId: 3, symbol: 'NVDA', name: 'Space Exploration Technologies Corp', last: 180.55, changePercent: 2.94},
   ]);
 
   readonly asks = signal<Level[]>([
-    { price: 41810, quantity: 120 }, { price: 41815, quantity: 340 },
-    { price: 41820, quantity: 120 }, { price: 41825, quantity: 560 },
-    { price: 41835, quantity: 150 }, { price: 41850, quantity: 700 },
+    {price: 41810, quantity: 120}, {price: 41815, quantity: 340},
+    {price: 41820, quantity: 120}, {price: 41825, quantity: 560},
+    {price: 41835, quantity: 150}, {price: 41850, quantity: 700},
   ]);
 
   readonly bids = signal<Level[]>([
-    { price: 41800, quantity: 260 }, { price: 41795, quantity: 480 },
-    { price: 41790, quantity: 190 }, { price: 41780, quantity: 620 },
-    { price: 41770, quantity: 300 }, { price: 41755, quantity: 540 },
+    {price: 41800, quantity: 260}, {price: 41795, quantity: 480},
+    {price: 41790, quantity: 190}, {price: 41780, quantity: 620},
+    {price: 41770, quantity: 300}, {price: 41755, quantity: 540},
   ]);
 
   readonly side = signal<'buy' | 'sell'>('buy');
@@ -162,10 +172,10 @@ export class App implements OnInit, OnDestroy {
       quantity: this.quantity(),
     }).subscribe({
       next: ack => {
-        if(!ack.matched){
+        if (!ack.matched) {
           const instrument = this.activeInstrument();
 
-          if(instrument){
+          if (instrument) {
             this.workingOrders.update(orders => [
               {
                 orderId: ack.orderId,
@@ -190,15 +200,15 @@ export class App implements OnInit, OnDestroy {
     });
   }
 
-  cancelOrder(order: WorkingOrder): void{
+  cancelOrder(order: WorkingOrder): void {
     this.api.cancelOrder(
       order.securityId,
       order.orderId,
       order.username
     ).subscribe({
-      next:() =>{
+      next: () => {
         this.workingOrders.update(orders =>
-        orders.filter(item => item.orderId !== order.orderId));
+          orders.filter(item => item.orderId !== order.orderId));
       },
       error: () => this.submitError.set('Order could not be cancelled')
     })
@@ -222,8 +232,25 @@ export class App implements OnInit, OnDestroy {
   }
 
   private handleMarketMessage(message: MarketMessage): void {
-    if (message.type !== 'book') return;
-    this.applyBook(message);
+    if (message.type === 'book') {
+      this.applyBook(message);
+      return;
+    }
+
+    const side: TapeRow['side'] =
+      this.bestAsk() !== null && message.price >= this.bestAsk()!
+        ? 'buy'
+        : 'sell';
+
+    this.tape.update(rows => [
+      {
+        id: `${message.filledAt}-${message.price}-${message.quantity}`,
+        price: message.price,
+        quantity: message.quantity,
+        side,
+        filledAt: message.filledAt
+      }, ...rows,
+    ].slice(0, 60));
   }
 
   private applyBook(book: BookMessage): void {
