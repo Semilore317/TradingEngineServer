@@ -8,7 +8,7 @@ import {
 } from '@angular/core';
 import { MarketDataService } from './MarketData.service';
 import { TradingApiService } from './TradingApi.service';
-import { BookMessage, MarketMessage } from './trading.models';
+import { BookMessage, MarketMessage, WorkingOrder } from './trading.models';
 
 interface Instrument {
   securityId: number;
@@ -41,6 +41,7 @@ export class App implements OnInit, OnDestroy {
   private readonly marketData = inject(MarketDataService);
   private readonly api = inject(TradingApiService);
 
+  readonly workingOrders = signal<WorkingOrder[]>([]);
   readonly connectionStatus = signal('CONNECTING');
   readonly dark = signal(
     typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches
@@ -66,7 +67,7 @@ export class App implements OnInit, OnDestroy {
   ]);
 
   readonly side = signal<'buy' | 'sell'>('buy');
-  readonly trader = signal('sbanks');
+  readonly trader = signal('Jon Snow');
   readonly priceInput = signal('418.50');
   readonly quantityInput = signal('500');
   readonly submitError = signal('');
@@ -101,10 +102,10 @@ export class App implements OnInit, OnDestroy {
     return Math.max(1, total(this.asks()), total(this.bids()));
   });
 
-  readonly totalBookDepth = computed(() =>{
+  readonly totalBookDepth = computed(() =>
     [...this.asks(), ...this.bids()]
       .reduce((total, level) => total + level.quantity, 0)
-  })
+  );
 
   ngOnInit(): void {
     this.applyTheme();
@@ -161,7 +162,25 @@ export class App implements OnInit, OnDestroy {
       quantity: this.quantity(),
     }).subscribe({
       next: ack => {
-        console.log('Order Accepted', ack);
+        if(!ack.matched){
+          const instrument = this.activeInstrument();
+
+          if(instrument){
+            this.workingOrders.update(orders => [
+              {
+                orderId: ack.orderId,
+                securityId: instrument.securityId,
+                symbol: instrument.symbol,
+                username: this.trader().trim(),
+                side: this.side(),
+                price: this.priceCents(),
+                quantity: this.quantity(),
+                filledQuantity: 0,
+              },
+              ...orders,
+            ]);
+          }
+        }
         this.isSubmitting.set(false);
       },
       error: () => {
@@ -170,6 +189,21 @@ export class App implements OnInit, OnDestroy {
       },
     });
   }
+
+  cancelOrder(order: WorkingOrder): void{
+    this.api.cancelOrder(
+      order.securityId,
+      order.orderId,
+      order.username
+    ).subscribe({
+      next:() =>{
+        this.workingOrders.update(orders =>
+        orders.filter(item => item.orderId !== order.orderId));
+      },
+      error: () => this.submitError.set('Order could not be cancelled')
+    })
+  }
+
 
   private applyTheme(): void {
     if (typeof document !== 'undefined') {
