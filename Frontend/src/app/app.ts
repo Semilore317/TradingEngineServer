@@ -1,5 +1,18 @@
-import {inject, Component, computed, signal, WritableSignal} from '@angular/core';
+import {
+  inject,
+  Component,
+  computed,
+  OnDestroy,
+  OnInit,
+  signal,
+  WritableSignal
+} from '@angular/core';
 import {TradingApiService} from './TradingApi.service';
+import {
+  BookMessage,
+  MarketMessage,
+} from './trading.models';
+import {MarketDataService} from './MarketData.service';
 
 interface Instrument {
   securityId: number;
@@ -27,7 +40,10 @@ interface LadderRow {
   templateUrl: './app.html',
   styleUrl: './app.css'
 })
-export class App {
+export class App implements OnInit, OnDestroy {
+  private readonly marketData = inject(MarketDataService);
+
+  readonly connectionStatus = signal('CONNECTING');
   readonly dark = signal(typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches);
   readonly activeId = signal(1);
 
@@ -49,8 +65,13 @@ export class App {
     {price: 41770, quantity: 300}, {price: 41755, quantity: 540},
   ]);
 
-  constructor() {
+  ngOnInit(): void {
     this.applyTheme();
+    this.subscribeToInstrument(this.activeId());
+  }
+
+  ngOnDestroy(): void {
+    this.marketData.disconnect();
   }
 
   toggleTheme(): void {
@@ -100,10 +121,37 @@ export class App {
     return a !== null && b !== null ? (a + b) / 2 : null;
   });
 
-  select(id: number): void {
-    this.activeId.set(id);
+  private subscribeToInstrument(securityId: number): void {
+    this.connectionStatus.set('CONNECTING');
+
+    this.marketData.connect(
+      securityId,
+      (message: MarketMessage) => this.handleMarketMessage(message),
+      (status: string) => this.connectionStatus.set(status)
+    );
   }
 
+  private handleMarketMessage(message: MarketMessage): void {
+    if (message.type !== 'book')
+      return;
+
+    this.applyBook(message);
+  }
+
+  private applyBook(book: BookMessage): void {
+    this.bids.set(book.bids);
+    this.asks.set(book.asks);
+  }
+
+  select(id: number): void {
+    if (id == this.activeId())
+      return;
+
+    this.activeId.set(id);
+    this.asks.set([]);
+    this.bids.set([]);
+    this.subscribeToInstrument(id);
+  }
 
 // order entry
   readonly side = signal<'buy' | 'sell'>('buy');
@@ -137,12 +185,12 @@ export class App {
     event?.preventDefault();
     this.submitError.set('');
 
-    if(!this.trader().trim()){
+    if (!this.trader().trim()) {
       this.submitError.set("Enter a trader name");
       return;
     }
 
-    if(this.priceCents() <= 0 || this.quantity() <= 0){
+    if (this.priceCents() <= 0 || this.quantity() <= 0) {
       this.submitError.set("Price & Quantity must be greater than 0");
     }
 
@@ -151,7 +199,7 @@ export class App {
     this.api.placeOrder({
       securityId: this.activeId(),
       username: this.trader().trim(),
-      side: this.side() === 'buy'? 'Buy': 'Sell',
+      side: this.side() === 'buy' ? 'Buy' : 'Sell',
       price: this.priceCents(),
       quantity: this.quantity(),
     }).subscribe({
